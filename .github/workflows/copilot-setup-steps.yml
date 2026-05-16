@@ -1,0 +1,58 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Top-level permissions are minimal; the job below declares its own
+# read-only scope for an explicit defense-in-depth.
+permissions:
+  contents: read
+
+jobs:
+  copilot-setup-steps:
+    name: Copilot setup steps (PHP + Node + dependency install)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout source; setup steps install deps only, no writes
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, bcmath, sqlite3, pdo_sqlite, gd, zip, curl
+          coverage: none
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+
+      - name: Install root npm dependencies
+        run: npm ci
+
+      - name: Install ParkHub web dependencies
+        run: cd parkhub-web && npm ci
+
+      - name: Install resources web dependencies
+        if: ${{ hashFiles('resources/js/package-lock.json') != '' }}
+        run: cd resources/js && npm ci

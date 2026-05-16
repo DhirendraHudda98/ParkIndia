@@ -1,0 +1,147 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Providers;
+
+use App\Events\BookingCancelled;
+use App\Events\BookingCreated;
+use App\Listeners\PushSseBookingEvent;
+use App\Models\Absence;
+use App\Models\Announcement;
+use App\Models\AuditLog;
+use App\Models\Booking;
+use App\Models\Favorite;
+use App\Models\Notification;
+use App\Models\ParkingLot;
+use App\Models\Tenant;
+use App\Models\Vehicle;
+use App\Models\Webhook;
+use App\Policies\AbsencePolicy;
+use App\Policies\AnnouncementPolicy;
+use App\Policies\AuditLogPolicy;
+use App\Policies\BookingPolicy;
+use App\Policies\FavoritePolicy;
+use App\Policies\NotificationPolicy;
+use App\Policies\ParkingLotPolicy;
+use App\Policies\TenantPolicy;
+use App\Policies\VehiclePolicy;
+use App\Policies\WebhookPolicy;
+use App\Support\TenantScope;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        // Disable the default {data: ...} wrapping on JsonResource — the ApiResponseWrapper
+        // middleware already wraps all API responses in {success, data, error, meta}.
+        JsonResource::withoutWrapping();
+
+        // SSE real-time event listeners — push booking events to cache queue
+        Event::listen(BookingCreated::class, [PushSseBookingEvent::class, 'handleCreated']);
+        Event::listen(BookingCancelled::class, [PushSseBookingEvent::class, 'handleCancelled']);
+
+        // Register model policies
+        Gate::policy(Booking::class, BookingPolicy::class);
+        Gate::policy(ParkingLot::class, ParkingLotPolicy::class);
+        Gate::policy(Absence::class, AbsencePolicy::class);
+        Gate::policy(Vehicle::class, VehiclePolicy::class);
+        Gate::policy(Webhook::class, WebhookPolicy::class);
+        Gate::policy(Notification::class, NotificationPolicy::class);
+        Gate::policy(Favorite::class, FavoritePolicy::class);
+        Gate::policy(Tenant::class, TenantPolicy::class);
+        Gate::policy(Announcement::class, AnnouncementPolicy::class);
+        Gate::policy(AuditLog::class, AuditLogPolicy::class);
+
+        $this->configureRateLimiting();
+    }
+
+    /**
+     * Define named rate limiters for sensitive endpoints.
+     *
+     * When config('app.disable_rate_limits') is true (E2E test runs only,
+     * never production) every limiter is raised to 100_000 per minute so
+     * a full Playwright suite — which funnels every test through the
+     * loginViaUi helper from the same localhost IP — doesn't cascade into
+     * 429s after the first 5 tests.
+     *
+     * Tenant safety: every bucket key is namespaced by the current tenant
+     * via `TenantScope::rateLimitKey()`. Pre-auth endpoints fall back to
+     * the request host so `tenant-a.park.example` and `tenant-b.park.example`
+     * can't exhaust each other's buckets from a shared IP. When multi-tenant
+     * mode is off the namespace is a constant `'default'`, so bucket keys
+     * stay stable across the feature flag flip.
+     */
+    private function configureRateLimiting(): void
+    {
+        $disabled = (bool) config('app.disable_rate_limits', false);
+        $limit = static fn (int $normal): int => $disabled ? 100_000 : $normal;
+
+        // Tenant-namespaced per-IP key — prevents a shared-IP attacker on
+        // tenant A from burning through tenant B's quota.
+        $byTenantIp = static fn (Request $request): string => 't:'.TenantScope::rateLimitKey($request->getHost()).':ip:'.$request->ip();
+
+        // Tenant-namespaced per-user (fallback to IP) key.
+        $byTenantUser = static function (Request $request): string {
+            $tenantKey = TenantScope::rateLimitKey($request->getHost());
+            $actor = $request->user()?->id ?: $request->ip();
+
+            return 't:'.$tenantKey.':u:'.$actor;
+        };
+
+        // Auth endpoints: 5 attempts per minute per IP (brute-force protection)
+        RateLimiter::for('auth', function (Request $request) use ($limit, $byTenantIp) {
+            return Limit::perMinute($limit(5))->by($byTenantIp($request));
+        });
+
+        // Password reset: 3 attempts per 15 minutes per IP
+        RateLimiter::for('password-reset', function (Request $request) use ($disabled, $byTenantIp) {
+            return $disabled
+                ? Limit::perMinute(100_000)->by($byTenantIp($request))
+                : Limit::perMinutes(15, 3)->by($byTenantIp($request));
+        });
+
+        // Demo reset: 2 per minute per IP (heavy DB operation)
+        RateLimiter::for('demo-action', function (Request $request) use ($limit, $byTenantIp) {
+            return Limit::perMinute($limit(2))->by($byTenantIp($request));
+        });
+
+        // Setup mutations: 3 per minute per IP
+        RateLimiter::for('setup', function (Request $request) use ($limit, $byTenantIp) {
+            return Limit::perMinute($limit(3))->by($byTenantIp($request));
+        });
+
+        // Payment endpoints: 10 per minute per user (prevent abuse)
+        RateLimiter::for('payments', function (Request $request) use ($limit, $byTenantUser) {
+            return Limit::perMinute($limit(10))->by($byTenantUser($request));
+        });
+
+        // Lobby display: 10 per minute per IP (public kiosk polling)
+        RateLimiter::for('lobby-display', function (Request $request) use ($limit, $byTenantIp) {
+            return Limit::perMinute($limit(10))->by($byTenantIp($request));
+        });
+
+        // Authenticated API: 120 per minute per user (or IP if unauthenticated)
+        RateLimiter::for('api', function (Request $request) use ($limit, $byTenantUser) {
+            return Limit::perMinute($limit(120))->by($byTenantUser($request));
+        });
+    }
+}

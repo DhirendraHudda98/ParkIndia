@@ -1,0 +1,257 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+// ── Mocks ──
+const mockGetBookingHistory = vi.fn();
+const mockGetBookingStats = vi.fn();
+const mockGetLots = vi.fn();
+const mockUseTheme = vi.fn();
+vi.mock('../api/client', () => ({
+    api: {
+        getBookingHistory: (...args) => mockGetBookingHistory(...args),
+        getBookingStats: (...args) => mockGetBookingStats(...args),
+        getLots: (...args) => mockGetLots(...args),
+    },
+}));
+vi.mock('../context/ThemeContext', () => ({
+    useTheme: () => mockUseTheme(),
+}));
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key, opts) => {
+            const map = {
+                'history.title': 'Parking History',
+                'history.subtitle': 'View your past bookings and parking statistics',
+                'history.help': 'Track your parking history.',
+                'history.totalBookings': 'Total Bookings',
+                'history.favoriteLot': 'Favorite Lot',
+                'history.avgDuration': 'Avg. Duration',
+                'history.creditsSpent': 'Credits Spent',
+                'history.monthlyTrend': 'Monthly Trend',
+                'history.busiestDay': 'Busiest Day',
+                'history.busiestDayDesc': 'Day with the most bookings',
+                'history.filters': 'Filters',
+                'history.filterLot': 'Filter by lot',
+                'history.allLots': 'All lots',
+                'history.dateFrom': 'From date',
+                'history.dateTo': 'To date',
+                'history.noHistory': 'No booking history yet',
+                'history.slot': 'Slot',
+                'history.showing': `${opts?.from}-${opts?.to} of ${opts?.total}`,
+                'history.prevPage': 'Previous page',
+                'history.nextPage': 'Next page',
+                'history.monday': 'Monday',
+                'history.status.completed': 'Completed',
+                'history.status.cancelled': 'Cancelled',
+            };
+            return map[key] || key;
+        },
+    }),
+}));
+vi.mock('framer-motion', () => ({
+    motion: {
+        div: React.forwardRef(({ children, initial, animate, exit, transition, variants, ...props }, ref) => (<div ref={ref} {...props}>{children}</div>)),
+    },
+    AnimatePresence: ({ children }) => <>{children}</>,
+}));
+vi.mock('@phosphor-icons/react', () => ({
+    ClockCounterClockwise: (props) => <span data-testid="icon-history" {...props}/>,
+    Star: (props) => <span data-testid="icon-star" {...props}/>,
+    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
+    TrendUp: (props) => <span data-testid="icon-trend-up" {...props}/>,
+    CalendarBlank: (props) => <span data-testid="icon-calendar" {...props}/>,
+    FunnelSimple: (props) => <span data-testid="icon-filter" {...props}/>,
+    CaretLeft: (props) => <span data-testid="icon-left" {...props}/>,
+    CaretRight: (props) => <span data-testid="icon-right" {...props}/>,
+    Question: (props) => <span data-testid="icon-question" {...props}/>,
+    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
+    Coins: (props) => <span data-testid="icon-coins" {...props}/>,
+}));
+vi.mock('../components/OnboardingHint', () => ({
+    OnboardingHint: ({ text }) => <span data-testid="onboarding-hint">{text}</span>,
+}));
+vi.mock('../constants/animations', () => ({
+    stagger: {},
+    fadeUp: {},
+}));
+import { ParkingHistoryPage } from './ParkingHistory';
+const makeStats = () => ({
+    total_bookings: 42,
+    favorite_lot: 'Garage Alpha',
+    avg_duration_minutes: 120,
+    busiest_day: 'Monday',
+    credits_spent: 150,
+    monthly_trend: [
+        { month: '2025-10', bookings: 5 },
+        { month: '2025-11', bookings: 8 },
+        { month: '2025-12', bookings: 3 },
+        { month: '2026-01', bookings: 10 },
+        { month: '2026-02', bookings: 7 },
+        { month: '2026-03', bookings: 9 },
+    ],
+});
+const makeBooking = (id, status = 'completed') => ({
+    id,
+    user_id: 'u1',
+    lot_id: 'lot-1',
+    slot_id: 's1',
+    lot_name: 'Garage Alpha',
+    slot_number: '12',
+    start_time: '2026-03-10T08:00:00Z',
+    end_time: '2026-03-10T10:00:00Z',
+    status,
+    total_price: 5,
+    currency: 'EUR',
+});
+describe('ParkingHistoryPage', () => {
+    beforeEach(() => {
+        mockGetBookingHistory.mockClear();
+        mockGetBookingStats.mockClear();
+        mockGetLots.mockClear();
+        mockUseTheme.mockReset();
+        mockUseTheme.mockReturnValue({ designTheme: 'marble' });
+        mockGetLots.mockResolvedValue({ success: true, data: [{ id: 'lot-1', name: 'Garage Alpha', total_slots: 10, available_slots: 5, status: 'open' }] });
+        mockGetBookingStats.mockResolvedValue({ success: true, data: makeStats() });
+        mockGetBookingHistory.mockResolvedValue({
+            success: true,
+            data: {
+                items: [makeBooking('b1'), makeBooking('b2', 'cancelled')],
+                page: 1,
+                per_page: 10,
+                total: 2,
+                total_pages: 1,
+            },
+        });
+    });
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+    it('renders the page title', async () => {
+        render(<ParkingHistoryPage />);
+        await waitFor(() => {
+            expect(screen.getAllByText('Parking History').length).toBeGreaterThan(0);
+            expect(screen.getByTestId('history-shell')).toHaveAttribute('data-surface', 'marble');
+        });
+    });
+    it('switches to the void surface when the void theme is active', async () => {
+        mockUseTheme.mockReturnValue({ designTheme: 'void' });
+        render(<ParkingHistoryPage />);
+        await waitFor(() => {
+            expect(screen.getByTestId('history-shell')).toHaveAttribute('data-surface', 'void');
+        });
+    });
+    it('displays stats cards', async () => {
+        render(<ParkingHistoryPage />);
+        await waitFor(() => {
+            expect(screen.getAllByText('42').length).toBeGreaterThan(0);
+            expect(screen.getAllByText('150').length).toBeGreaterThan(0);
+            expect(screen.getAllByText('Total Bookings').length).toBeGreaterThan(0);
+            expect(screen.getAllByText('Credits Spent').length).toBeGreaterThan(0);
+        });
+    });
+    it('shows booking history items', async () => {
+        render(<ParkingHistoryPage />);
+        await waitFor(() => {
+            expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
+            expect(screen.getAllByText('Cancelled').length).toBeGreaterThan(0);
+        });
+    });
+    it('shows empty state when no bookings', async () => {
+        mockGetBookingHistory.mockResolvedValue({
+            success: true,
+            data: { items: [], page: 1, per_page: 10, total: 0, total_pages: 0 },
+        });
+        render(<ParkingHistoryPage />);
+        await waitFor(() => {
+            expect(screen.getByText('No booking history yet')).toBeInTheDocument();
+        });
+    });
+    it('renders filter controls', async () => {
+        render(<ParkingHistoryPage />);
+        await waitFor(() => {
+            expect(screen.getAllByText('Filters').length).toBeGreaterThan(0);
+            expect(screen.getByLabelText('Filter by lot')).toBeInTheDocument();
+        });
+    });
+    it('calls API with correct params on mount', async () => {
+        render(<ParkingHistoryPage />);
+        await waitFor(() => {
+            expect(mockGetBookingHistory).toHaveBeenCalledWith({
+                lot_id: undefined,
+                from: undefined,
+                to: undefined,
+                page: 1,
+                per_page: 10,
+            });
+            expect(mockGetBookingStats).toHaveBeenCalled();
+            expect(mockGetLots).toHaveBeenCalled();
+        });
+    });
+    it('falls back to a dash when busiest day is missing', async () => {
+        mockGetBookingStats.mockResolvedValue({
+            success: true,
+            data: { ...makeStats(), busiest_day: '' },
+        });
+        render(<ParkingHistoryPage />);
+        await waitFor(() => {
+            expect(screen.getByText('—')).toBeInTheDocument();
+        });
+    });
+    it('updates filters and requests new history data', async () => {
+        const user = userEvent.setup();
+        render(<ParkingHistoryPage />);
+        await waitFor(() => {
+            expect(screen.getByLabelText('Filter by lot')).toBeInTheDocument();
+        });
+        await user.selectOptions(screen.getByLabelText('Filter by lot'), 'lot-1');
+        await user.type(screen.getByLabelText('From date'), '2026-03-01');
+        await user.type(screen.getByLabelText('To date'), '2026-03-10');
+        await waitFor(() => {
+            expect(mockGetBookingHistory).toHaveBeenLastCalledWith({
+                lot_id: 'lot-1',
+                from: new Date('2026-03-01').toISOString(),
+                to: new Date('2026-03-10T23:59:59').toISOString(),
+                page: 1,
+                per_page: 10,
+            });
+        });
+    });
+    it('supports pagination controls', async () => {
+        const user = userEvent.setup();
+        mockGetBookingHistory.mockResolvedValue({
+            success: true,
+            data: {
+                items: [makeBooking('b1')],
+                page: 1,
+                per_page: 10,
+                total: 25,
+                total_pages: 3,
+            },
+        });
+        render(<ParkingHistoryPage />);
+        await waitFor(() => {
+            expect(screen.getByText('1-10 of 25')).toBeInTheDocument();
+        });
+        await user.click(screen.getByLabelText('Next page'));
+        await waitFor(() => {
+            expect(mockGetBookingHistory).toHaveBeenLastCalledWith({
+                lot_id: undefined,
+                from: undefined,
+                to: undefined,
+                page: 2,
+                per_page: 10,
+            });
+        });
+        await user.click(screen.getByLabelText('Previous page'));
+        await waitFor(() => {
+            expect(mockGetBookingHistory).toHaveBeenLastCalledWith({
+                lot_id: undefined,
+                from: undefined,
+                to: undefined,
+                page: 1,
+                per_page: 10,
+            });
+        });
+    });
+});

@@ -1,0 +1,721 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 2
+			path: app/Console/Commands/CreateAdminUser.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AbsenceApprovalController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Absence\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/AbsenceApprovalController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AbsenceController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AbsenceController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Absence\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/AbsenceController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$booking_count\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/AdminAnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$bookings\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/AdminAnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AdminAnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$date\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/AdminAnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/AdminAnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$revenue\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/AdminAnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$month\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AdminAnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$new_users\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AdminAnalyticsController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Booking\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 5
+			path: app/Http/Controllers/Api/AdminAnalyticsController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\User\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/AdminAnalyticsController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 3
+			path: app/Http/Controllers/Api/AdminController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\CreditTransaction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/AdminCreditController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AdminReportController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Booking\:\:\$occupied_slots\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/AdminReportController.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Http/Controllers/Api/AdminReportController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Booking\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/AdminReportController.php
+
+		-
+			message: '#^Offset 0 on non\-empty\-list\<string\> on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Http/Controllers/Api/ApiVersionController.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Laravel\\Sanctum\\PersonalAccessToken and ''delete'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Http/Controllers/Api/AuthController.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/AuthController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: app/Http/Controllers/Api/AuthController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/AuthController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Http\\Request\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/AuthController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/AuthController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/AuthController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$total_amount\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/BillingController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$total_bookings\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/BillingController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$user_count\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/BillingController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/BookingController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\WaitlistEntry model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/BookingController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\ParkingLot\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/BookingController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 4
+			path: app/Http/Controllers/Api/BookingInvoiceController.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Api/BookingInvoiceController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/BookingInvoiceController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/BookingInvoiceController.php
+
+		-
+			message: '#^Relation ''requester'' is not found in App\\Models\\SwapRequest model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/BookingSwapController.php
+
+		-
+			message: '#^Relation ''requesterBooking'' is not found in App\\Models\\SwapRequest model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/BookingSwapController.php
+
+		-
+			message: '#^Relation ''target'' is not found in App\\Models\\SwapRequest model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/BookingSwapController.php
+
+		-
+			message: '#^Relation ''targetBooking'' is not found in App\\Models\\SwapRequest model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/BookingSwapController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Http/Controllers/Api/DataImportExportController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/DataImportExportController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>username" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/DataImportExportController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Vehicle\:\:\$last_used\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/FleetController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Vehicle\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/FleetController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/FleetController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/FleetController.php
+
+		-
+			message: '#^Method Illuminate\\Database\\Eloquent\\Model\:\:only\(\) invoked with 5 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Api/GraphQLController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Zone\:\:\$slots_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/LobbyDisplayController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$current_booking\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/LotController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/LotController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slot_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/LotController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/LotController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MaintenanceController.php
+
+		-
+			message: '#^Cannot call method toISOString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/MaintenanceController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/MiscController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/MobileBookingController.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Http/Controllers/Api/OAuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PWAController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$end_time\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PWAController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PWAController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PWAController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$start_time\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PWAController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/PWAController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/PWAController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: app/Http/Controllers/Api/ParkingHistoryController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$end_time\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ParkingPassController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ParkingPassController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ParkingPassController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$start_time\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ParkingPassController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: app/Http/Controllers/Api/ParkingPassController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ParkingPass\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/ParkingPassController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/ParkingPassController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>slot_number" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/ParkingPassController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\ConnectionInterface\:\:getSchemaBuilder\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ParkingZoneController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/ParkingZoneController.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Http/Controllers/Api/ScheduledReportController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Booking\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Booking\>\:\:\$date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/SharingController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ParkingSlot\:\:\$label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/SharingController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Http/Controllers/Api/SharingController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/SharingController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/SseController.php
+
+		-
+			message: '#^Parameter \#1 \$userId of method App\\Http\\Controllers\\Api\\SseController\:\:pollBookingEvents\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/SseController.php
+
+		-
+			message: '#^PHPDoc tag @var with type class\-string is not subtype of native type ''\\\\Stripe\\\\Checkout…''\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: app/Http/Controllers/Api/StripeController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/TeamController.php
+
+		-
+			message: '#^Offset 0 on non\-empty\-list\<string\> on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Http/Controllers/Api/TeamController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Absence\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/TeamController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/TeamController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\TranslationProposal\:\:\$reviewer\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/TranslationController.php
+
+		-
+			message: '#^Relation ''proposer'' is not found in App\\Models\\TranslationProposal model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/TranslationController.php
+
+		-
+			message: '#^Relation ''reviewer'' is not found in App\\Models\\TranslationProposal model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/TranslationController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 5
+			path: app/Http/Controllers/Api/TranslationController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: '#^Relation ''slot'' is not found in App\\Models\\Favorite model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/UserController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and false will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Api/VehicleController.php
+
+		-
+			message: '#^Relation ''lot'' is not found in App\\Models\\WaitlistEntry model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/WaitlistController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/WaitlistController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/WidgetController.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: app/Jobs/AggregateSystemMetricsJob.php
+
+		-
+			message: '#^Offset 0 on non\-empty\-list\<string\> on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Jobs/AggregateSystemMetricsJob.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Jobs/AutoReleaseBookingsJob.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\RecurringBooking model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Jobs/ExpandRecurringBookingsJob.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>slot_number" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Jobs/ExpandRecurringBookingsJob.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: app/Jobs/SendBookingReminderJob.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: app/Mail/BookingConfirmation.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Mail/BookingConfirmation.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Mail/BookingReminderMail.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Mail/BookingReminderMail.php
+
+		-
+			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: app/Services/Audit/AuditLogQueryService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\<string, mixed\>, Closure\(App\\Models\\AuditLog\)\: array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/Audit/AuditLogQueryService.php
+
+		-
+			message: '#^Parameter \#1 \$e of method App\\Services\\Audit\\AuditLogQueryService\:\:csvRow\(\) expects App\\Models\\AuditLog, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Audit/AuditLogQueryService.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Services/Audit/AuditLogQueryService.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Services/Reports/ReportExportService.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/Reports/ReportExportService.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Services/User/UserAccountService.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/User/UserAccountService.php

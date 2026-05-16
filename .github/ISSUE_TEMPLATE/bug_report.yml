@@ -1,0 +1,30 @@
+name: Bug Report
+description: Report a bug in ParkHub
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      placeholder: What happened? What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Go to...\n2. Click on...\n3. See error"
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment method
+      options:
+        - Docker
+        - Binary
+        - Build from source
+        - Kubernetes (Helm)
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "OS, Rust version, browser"

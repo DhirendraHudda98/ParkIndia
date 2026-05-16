@@ -1,0 +1,31 @@
+{
+  // infection-php config — run with `vendor/bin/infection` or `composer infection`.
+  //
+  // https://infection.github.io/
+  //
+  // Scope: hand-written validation rules + HTTP middleware only. A
+  // surviving mutant in these files is a real coverage gap, not scaffold
+  // or framework-generated noise. The surface deliberately stays narrow
+  // while the baseline MSI beds in — widen in a follow-up pass once the
+  // first few nightly reports land.
+  $schema: "vendor/infection/infection/resources/schema.json",
+  source: {
+    directories: [
+      "app/Rules",
+      "app/Http/Middleware",
+    ],
+  },
+  logs: {
+    text: ".infection/infection.log",
+    summary: ".infection/summary.log",
+  },
+  mutators: {
+    "@default": true,
+  },
+  timeout: 30,
+  // Initial baseline. Generous on purpose; tighten once "normal" MSI is
+  // observable in CI after a handful of nightly sweeps.
+  minMsi: 60,
+  minCoveredMsi: 70,
+  testFramework: "phpunit",
+}

@@ -1,0 +1,60 @@
+<IfModule mod_headers.c>
+    # Security headers are emitted by app/Http/Middleware/SecurityHeaders.php
+    # (see buildCsp / the response->headers->set() calls). Setting them here
+    # as well causes Apache to send each header twice — once via mod_headers,
+    # once via Laravel — which surfaces as duplicated values like
+    # "nosniff, nosniff" when parsed by fetch or Playwright's res.headers().
+    # Keep only the process-level "hide implementation details" directives.
+    Header unset X-Powered-By
+    Header always unset Server
+
+    # Immutable caching for Astro-hashed chunks. Filenames carry a content
+    # hash (e.g. /_astro/client.ltbowV7u.js) so the URL changes whenever
+    # the file changes — 1-year max-age with immutable is safe and lets
+    # Cloudflare / browsers skip revalidation entirely on repeat visits.
+    <If "%{REQUEST_URI} =~ m#^/_astro/#">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </If>
+
+    # Favicons, manifest, SW: short cache, must revalidate. These don't
+    # have hashed filenames so they need to update when the source does.
+    <FilesMatch "^(favicon\.(ico|svg)|manifest\.json|sw\.js|offline\.html)$">
+        Header set Cache-Control "public, max-age=3600, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_brotli.c>
+    # Brotli compression — 20-30% smaller than gzip on JS/CSS/HTML.
+    # Modern browsers advertise 'br' in Accept-Encoding; Apache picks brotli
+    # when available, falls back to deflate/gzip otherwise.
+    AddOutputFilterByType BROTLI_COMPRESS \
+        text/html text/plain text/css text/xml \
+        text/javascript application/javascript application/x-javascript \
+        application/json application/xml application/manifest+json \
+        image/svg+xml font/ttf font/eot application/vnd.ms-fontobject
+    # Skip already-compressed formats (woff2 is self-compressed, images are too).
+    SetEnvIfNoCase Request_URI \.(?:gz|bz2|zip|7z|xz|br|png|jpe?g|gif|webp|avif|ico|woff2|mp[34]|webm)$ no-brotli
+    Header append Vary Accept-Encoding
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>

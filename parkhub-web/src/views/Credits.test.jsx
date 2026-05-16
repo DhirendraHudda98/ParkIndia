@@ -1,0 +1,178 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+// ── Mocks ──
+const mockGetUserCredits = vi.fn();
+vi.mock('../api/client', () => ({
+    api: {
+        getUserCredits: (...args) => mockGetUserCredits(...args),
+    },
+}));
+vi.mock('../context/AuthContext', () => ({
+    useAuth: () => ({
+        user: {
+            id: 'u-1',
+            username: 'jdoe',
+            name: 'John',
+            email: 'john@test.com',
+            role: 'user',
+            credits_balance: 7,
+            credits_monthly_quota: 10,
+        },
+    }),
+}));
+vi.mock('../context/ThemeContext', () => ({
+    useTheme: () => ({
+        designTheme: 'marble',
+    }),
+}));
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key, opts) => {
+            const map = {
+                'credits.title': 'Credits',
+                'credits.subtitle': 'Your credit balance',
+                'credits.balance': 'Balance',
+                'credits.monthlyQuota': 'Monthly Quota',
+                'credits.used': 'Used',
+                'credits.lastRefill': 'Last Refill',
+                'credits.nextRefill': 'Next Refill',
+                'credits.automatic': 'Automatic',
+                'credits.noExpiry': 'No expiry',
+                'credits.overview': 'Overview',
+                'credits.summaryTitle': 'Credit overview',
+                'credits.history': 'History',
+                'credits.entries': 'entries',
+                'credits.noTransactions': 'No transactions yet',
+                'credits.creditsPerBooking': `${opts?.count ?? 1} credit per booking`,
+                'credits.grant': 'Grant',
+                'credits.deduction': 'Deduction',
+                'credits.monthly_refill': 'Monthly Refill',
+            };
+            return map[key] || key;
+        },
+    }),
+}));
+vi.mock('framer-motion', () => ({
+    motion: {
+        div: React.forwardRef(({ children, variants, initial, animate, exit, transition, ...props }, ref) => (<div ref={ref} {...props}>{children}</div>)),
+        section: React.forwardRef(({ children, variants, initial, animate, exit, transition, ...props }, ref) => (<section ref={ref} {...props}>{children}</section>)),
+    },
+}));
+vi.mock('@phosphor-icons/react', () => ({
+    Coins: (props) => <span data-testid="icon-coins" {...props}/>,
+    ArrowDown: (props) => <span data-testid="icon-arrow-down" {...props}/>,
+    ArrowUp: (props) => <span data-testid="icon-arrow-up" {...props}/>,
+    ArrowClockwise: (props) => <span data-testid="icon-clockwise" {...props}/>,
+    TrendUp: (props) => <span data-testid="icon-trend-up" {...props}/>,
+    Sparkle: (props) => <span data-testid="icon-sparkle" {...props}/>,
+}));
+vi.mock('../constants/animations', () => ({
+    staggerSlow: { hidden: {}, show: {} },
+    fadeUp: { hidden: {}, show: {} },
+}));
+import { CreditsPage } from './Credits';
+describe('CreditsPage', () => {
+    beforeEach(() => {
+        mockGetUserCredits.mockClear();
+    });
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+    it('shows loading skeleton initially', () => {
+        mockGetUserCredits.mockReturnValue(new Promise(() => { }));
+        render(<CreditsPage />);
+        // Skeleton uses className "skeleton"
+        const skeletons = document.querySelectorAll('.skeleton');
+        expect(skeletons.length).toBeGreaterThan(0);
+    });
+    it('renders credits page with balance', async () => {
+        mockGetUserCredits.mockResolvedValue({
+            success: true,
+            data: {
+                enabled: true,
+                balance: 7,
+                monthly_quota: 10,
+                last_refilled: '2026-03-01T00:00:00Z',
+                transactions: [],
+            },
+        });
+        render(<CreditsPage />);
+        await waitFor(() => {
+            expect(screen.getByText('Credits')).toBeInTheDocument();
+        });
+        expect(screen.getAllByText('Balance').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('7').length).toBeGreaterThan(0);
+        expect(screen.getByText('/ 10')).toBeInTheDocument();
+        expect(screen.getAllByText('Credit overview').length).toBeGreaterThan(0);
+    });
+    it('renders stat cards with quota and used', async () => {
+        mockGetUserCredits.mockResolvedValue({
+            success: true,
+            data: {
+                enabled: true,
+                balance: 6,
+                monthly_quota: 10,
+                last_refilled: '2026-03-01T00:00:00Z',
+                transactions: [],
+            },
+        });
+        render(<CreditsPage />);
+        await waitFor(() => {
+            expect(screen.getAllByText('Monthly Quota').length).toBeGreaterThan(0);
+        });
+        expect(screen.getAllByText('Used').length).toBeGreaterThan(0);
+        expect(screen.getByText('Last Refill')).toBeInTheDocument();
+        // Quota = 10, Used = 10 - 6 = 4
+        expect(screen.getAllByText('10').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('4').length).toBeGreaterThan(0);
+    });
+    it('shows empty transaction history', async () => {
+        mockGetUserCredits.mockResolvedValue({
+            success: true,
+            data: {
+                enabled: true,
+                balance: 5,
+                monthly_quota: 10,
+                transactions: [],
+            },
+        });
+        render(<CreditsPage />);
+        await waitFor(() => {
+            expect(screen.getByText('No transactions yet')).toBeInTheDocument();
+        });
+    });
+    it('renders transaction list when transactions exist', async () => {
+        mockGetUserCredits.mockResolvedValue({
+            success: true,
+            data: {
+                enabled: true,
+                balance: 8,
+                monthly_quota: 10,
+                last_refilled: '2026-03-01T00:00:00Z',
+                transactions: [
+                    { id: 't-1', amount: 10, type: 'monthly_refill', description: 'Monthly refill', created_at: '2026-03-01T00:00:00Z' },
+                    { id: 't-2', amount: -2, type: 'deduction', description: 'Booking #42', created_at: '2026-03-05T00:00:00Z' },
+                ],
+            },
+        });
+        render(<CreditsPage />);
+        await waitFor(() => {
+            expect(screen.getByText('History')).toBeInTheDocument();
+        });
+        expect(screen.getByText('Monthly Refill')).toBeInTheDocument();
+        expect(screen.getByText('Deduction')).toBeInTheDocument();
+        expect(screen.getAllByText('+10').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('-2').length).toBeGreaterThan(0);
+        expect(screen.getByText('2 entries')).toBeInTheDocument();
+    });
+    it('falls back to user context when API returns no data', async () => {
+        mockGetUserCredits.mockResolvedValue({ success: false, data: null });
+        render(<CreditsPage />);
+        await waitFor(() => {
+            expect(screen.getByText('Credits')).toBeInTheDocument();
+        });
+        // Falls back to user.credits_balance = 7
+        expect(screen.getAllByText('7').length).toBeGreaterThan(0);
+    });
+});

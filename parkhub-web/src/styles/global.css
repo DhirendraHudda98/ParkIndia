@@ -1,0 +1,829 @@
+@import "tailwindcss";
+@import "./themes.css";
+
+/* Enable class-based dark mode (Tailwind CSS 4 defaults to media query) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ParkHub Design System — Tailwind CSS 4 custom theme */
+
+@theme {
+  /* Brand palette — teal (OKLCH for wider gamut & better gradients) */
+  --color-primary-50: oklch(0.97 0.02 175);
+  --color-primary-100: oklch(0.94 0.05 175);
+  --color-primary-200: oklch(0.88 0.09 175);
+  --color-primary-300: oklch(0.82 0.13 172);
+  --color-primary-400: oklch(0.74 0.14 170);
+  --color-primary-500: oklch(0.66 0.13 168);
+  --color-primary-600: oklch(0.55 0.12 168);
+  --color-primary-700: oklch(0.47 0.10 170);
+  --color-primary-800: oklch(0.39 0.08 172);
+  --color-primary-900: oklch(0.35 0.07 172);
+  --color-primary-950: oklch(0.23 0.05 175);
+
+  /* Accent — amber (OKLCH) */
+  --color-accent-50: oklch(0.98 0.02 90);
+  --color-accent-100: oklch(0.95 0.05 90);
+  --color-accent-200: oklch(0.90 0.10 90);
+  --color-accent-300: oklch(0.86 0.15 85);
+  --color-accent-400: oklch(0.81 0.17 80);
+  --color-accent-500: oklch(0.74 0.16 75);
+  --color-accent-600: oklch(0.64 0.15 65);
+  --color-accent-700: oklch(0.52 0.13 55);
+
+  /* Surface — slate (OKLCH) */
+  --color-surface-50: oklch(0.98 0.005 260);
+  --color-surface-100: oklch(0.96 0.008 260);
+  --color-surface-200: oklch(0.91 0.01 260);
+  --color-surface-300: oklch(0.85 0.015 260);
+  --color-surface-400: oklch(0.68 0.02 260);
+  --color-surface-500: oklch(0.55 0.02 260);
+  --color-surface-600: oklch(0.45 0.02 260);
+  --color-surface-700: oklch(0.37 0.02 260);
+  --color-surface-800: oklch(0.27 0.02 260);
+  --color-surface-900: oklch(0.20 0.02 260);
+  --color-surface-950: oklch(0.14 0.02 260);
+
+  /* Status colors (OKLCH) */
+  --color-success: oklch(0.65 0.17 160);
+  --color-warning: oklch(0.74 0.16 75);
+  --color-danger: oklch(0.58 0.22 25);
+  --color-info: oklch(0.58 0.18 260);
+
+  /* Radii */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+
+  /* Animation durations */
+  --animate-fast: 150ms;
+  --animate-normal: 250ms;
+  --animate-slow: 400ms;
+}
+
+/* ── Semantic theme tokens ─────────────────────────────────────────────
+   These CSS custom properties reference the palette above and swap
+   automatically between light / dark. Components should prefer these
+   over raw palette colors where possible.
+   ──────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Classic defaults — overridden per-theme via [data-design-theme="..."] in themes.css
+     and by `.dark` below. The body reads var(--theme-bg) so every theme that sets
+     --dt-bg-primary automatically propagates via the mapping aliases at the bottom. */
+  --theme-bg: var(--color-surface-50);
+  --theme-bg-subtle: white;
+  --theme-bg-muted: var(--color-surface-100);
+  --theme-text: var(--color-surface-900);
+  --theme-text-muted: var(--color-surface-500);
+  --theme-text-faint: var(--color-surface-400);
+  --theme-border: var(--color-surface-200);
+  --theme-border-subtle: var(--color-surface-100);
+  --theme-card-bg: white;
+  --theme-card-border: var(--color-surface-200);
+
+  /* Glass morphism tokens */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-blur: 12px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Theme-token bridge ────────────────────────────────────────────────
+   Forward the per-theme --dt-* tokens (defined in themes.css under
+   [data-design-theme="X"] and .dark[data-design-theme="X"]) into the
+   generic --theme-* tokens the body and most components read from.
+
+   Specificity matters: we need to beat .dark (0,1,0). Using
+   :root[data-design-theme] (0,1,1) and :root.dark[data-design-theme]
+   (0,2,1) ensures both light and dark branches win over the plain
+   .dark{} fallback above.
+   ──────────────────────────────────────────────────────────────────── */
+:root[data-design-theme],
+:root.dark[data-design-theme] {
+  --theme-bg: var(--dt-bg-primary, var(--color-surface-50));
+  --theme-bg-subtle: var(--dt-bg-secondary, white);
+  --theme-bg-muted: var(--dt-bg-secondary, var(--color-surface-100));
+  --theme-text: var(--dt-text-primary, var(--color-surface-900));
+  --theme-text-muted: var(--dt-text-secondary, var(--color-surface-500));
+  --theme-border: var(--dt-border, var(--color-surface-200));
+  --theme-border-subtle: var(--dt-border-subtle, var(--color-surface-100));
+  --theme-card-bg: var(--dt-bg-card, white);
+  --theme-card-border: var(--dt-border, var(--color-surface-200));
+}
+
+.dark {
+  --theme-bg: var(--color-surface-950);
+  --theme-bg-subtle: var(--color-surface-900);
+  --theme-bg-muted: var(--color-surface-800);
+  --theme-text: var(--color-surface-100);
+  --theme-text-muted: var(--color-surface-400);
+  --theme-text-faint: var(--color-surface-500);
+  --theme-border: var(--color-surface-800);
+  --theme-border-subtle: var(--color-surface-800);
+  --theme-card-bg: var(--color-surface-900);
+  --theme-card-border: var(--color-surface-700);
+
+  /* Glass morphism tokens — dark variant */
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-blur: 16px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Use-case theme overrides (OKLCH) */
+
+[data-usecase="residential"] {
+  --color-primary-50: oklch(0.97 0.02 155);  --color-primary-100: oklch(0.93 0.05 155);
+  --color-primary-200: oklch(0.87 0.09 155);  --color-primary-300: oklch(0.80 0.14 155);
+  --color-primary-400: oklch(0.72 0.16 155);  --color-primary-500: oklch(0.65 0.17 160);
+  --color-primary-600: oklch(0.56 0.15 160);  --color-primary-700: oklch(0.47 0.12 160);
+  --color-primary-800: oklch(0.40 0.09 160);  --color-primary-900: oklch(0.35 0.08 160);
+  --color-primary-950: oklch(0.22 0.05 160);
+}
+
+[data-usecase="shared"] {
+  --color-primary-50: oklch(0.97 0.02 290);  --color-primary-100: oklch(0.93 0.04 290);
+  --color-primary-200: oklch(0.88 0.07 290);  --color-primary-300: oklch(0.80 0.10 285);
+  --color-primary-400: oklch(0.70 0.14 280);  --color-primary-500: oklch(0.58 0.18 275);
+  --color-primary-600: oklch(0.50 0.20 270);  --color-primary-700: oklch(0.43 0.20 270);
+  --color-primary-800: oklch(0.37 0.17 270);  --color-primary-900: oklch(0.32 0.14 270);
+  --color-primary-950: oklch(0.22 0.10 270);
+}
+
+[data-usecase="rental"] {
+  --color-primary-50: oklch(0.97 0.01 260);  --color-primary-100: oklch(0.93 0.03 260);
+  --color-primary-200: oklch(0.87 0.06 260);  --color-primary-300: oklch(0.78 0.10 260);
+  --color-primary-400: oklch(0.69 0.14 260);  --color-primary-500: oklch(0.58 0.18 260);
+  --color-primary-600: oklch(0.50 0.19 260);  --color-primary-700: oklch(0.44 0.18 260);
+  --color-primary-800: oklch(0.39 0.15 260);  --color-primary-900: oklch(0.34 0.12 260);
+  --color-primary-950: oklch(0.24 0.08 260);
+}
+
+[data-usecase="personal"] {
+  --color-primary-50: oklch(0.97 0.02 15);  --color-primary-100: oklch(0.93 0.04 15);
+  --color-primary-200: oklch(0.88 0.07 10);  --color-primary-300: oklch(0.80 0.12 10);
+  --color-primary-400: oklch(0.70 0.17 10);  --color-primary-500: oklch(0.60 0.22 10);
+  --color-primary-600: oklch(0.50 0.22 355);  --color-primary-700: oklch(0.43 0.20 350);
+  --color-primary-800: oklch(0.38 0.17 350);  --color-primary-900: oklch(0.34 0.14 350);
+  --color-primary-950: oklch(0.22 0.10 350);
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Smooth theme transition on the root — all descendant colors inherit */
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+body {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  min-height: 100dvh;
+  letter-spacing: -0.011em;
+}
+
+/* Smooth transitions for all elements that swap colors on theme change */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow, opacity, transform;
+  transition-duration: 250ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Theme switch: ripple effect via view-transition */
+::view-transition-old(root) {
+  animation: theme-fade-out 300ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+::view-transition-new(root) {
+  animation: theme-fade-in 300ms cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+@keyframes theme-fade-out {
+  from { opacity: 1; filter: none; }
+  to { opacity: 0; filter: blur(4px); }
+}
+
+@keyframes theme-fade-in {
+  from { opacity: 0; filter: blur(4px); }
+  to { opacity: 1; filter: none; }
+}
+
+p { line-height: 1.6; }
+
+/* Utilities */
+@utility tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Glass card — frosted glass morphism surface */
+@utility glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Solid card */
+@utility card {
+  background: var(--theme-card-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--theme-card-border);
+  box-shadow: var(--shadow-xs);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+/* Stat card */
+@utility stat-card {
+  background: var(--theme-card-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--theme-card-border);
+  padding: 1.25rem;
+}
+
+@utility stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* Buttons */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: var(--radius-md);
+  transition: all var(--animate-fast) ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.4);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: auto;
+}
+
+.btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+@utility btn-primary {
+  background: var(--color-primary-700);
+  color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-800);
+}
+
+@utility btn-secondary {
+  background: var(--theme-bg-muted);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
+}
+
+.btn-secondary:hover {
+  background: var(--color-surface-200);
+}
+
+.dark .btn-secondary:hover {
+  background: var(--color-surface-700);
+}
+
+@utility btn-ghost {
+  background: transparent;
+  color: var(--theme-text-muted);
+}
+
+.btn-ghost:hover {
+  background: var(--theme-bg-muted);
+}
+
+@utility btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+@utility btn-icon {
+  padding: 0.5rem;
+}
+
+/* Form inputs */
+@utility input {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--theme-text);
+  background: var(--theme-bg-subtle);
+  border: 1px solid var(--color-surface-300);
+  border-radius: var(--radius-md);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12);
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -1px;
+}
+
+.dark .input {
+  border-color: var(--color-surface-600);
+}
+
+/* Select option colors for dark mode */
+.dark select.input option {
+  background: var(--color-surface-800);
+  color: var(--color-surface-100);
+}
+
+/* Badges */
+@utility badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  line-height: 1.2;
+}
+
+@utility badge-success { background: oklch(0.93 0.05 150); color: oklch(0.35 0.10 155); }
+@utility badge-warning { background: oklch(0.95 0.05 90); color: oklch(0.42 0.10 55); }
+@utility badge-error { background: oklch(0.93 0.04 20); color: oklch(0.38 0.14 20); }
+@utility badge-gray { background: var(--theme-bg-muted); color: var(--theme-text-muted); }
+@utility badge-info { background: oklch(0.92 0.04 260); color: oklch(0.40 0.14 260); }
+@utility badge-primary { background: oklch(0.93 0.05 175); color: oklch(0.47 0.10 170); }
+
+.dark .badge-success { background: oklch(0.30 0.06 155 / 0.3); color: oklch(0.80 0.12 155); }
+.dark .badge-warning { background: oklch(0.35 0.06 75 / 0.3); color: oklch(0.85 0.12 85); }
+.dark .badge-error { background: oklch(0.30 0.06 25 / 0.3); color: oklch(0.80 0.10 20); }
+.dark .badge-gray { background: oklch(0.25 0.01 260 / 0.3); color: oklch(0.68 0.02 260); }
+.dark .badge-info { background: oklch(0.30 0.06 260 / 0.3); color: oklch(0.78 0.10 260); }
+.dark .badge-primary { background: oklch(0.30 0.06 175 / 0.3); color: oklch(0.82 0.10 175); }
+
+/* Skeleton loading */
+@utility skeleton {
+  background: linear-gradient(90deg, var(--color-surface-200) 25%, var(--color-surface-100) 50%, var(--color-surface-200) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-xl);
+}
+
+.dark .skeleton {
+  background: linear-gradient(90deg, var(--color-surface-800) 25%, var(--color-surface-700) 50%, var(--color-surface-800) 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Background for welcome/auth pages */
+@utility mesh-gradient {
+  background: var(--theme-bg);
+}
+
+/* Glass morphism modal — for dialogs and command palette */
+@utility glass-modal {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-shadow), 0 0 0 1px var(--glass-border);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-surface-300); border-radius: var(--radius-full); }
+.dark ::-webkit-scrollbar-thumb { background: var(--color-surface-600); }
+
+/* Focus ring */
+*:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Explicit focus-ring utility — apply to interactive elements (links,
+   buttons, sidebar items, top-nav, primary CTAs) when the global
+   *:focus-visible default isn't loud enough or is blocked by other
+   outline rules. Mirrors the parkhub-rust pattern. */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: 0.375rem;
+}
+
+/* Mobile touch target minimum */
+@media (max-width: 640px) {
+  .btn-icon {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print styles for booking confirmation */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-pass,
+  .print-pass * {
+    visibility: visible;
+  }
+  .print-pass {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: none;
+    border-radius: 0;
+    background: white !important;
+    color: black !important;
+    padding: 2rem;
+  }
+  .print-pass img {
+    max-width: 200px;
+    margin: 0 auto;
+  }
+}
+
+/* ── Container queries — self-responsive inner components ─────────── */
+
+@utility container-card {
+  container-type: inline-size;
+  container-name: card;
+}
+
+@utility container-panel {
+  container-type: inline-size;
+  container-name: panel;
+}
+
+/* Stat cards: stack layout below 280px container width */
+@container card (max-width: 280px) {
+  .stat-card {
+    padding: 0.75rem;
+  }
+  .stat-value {
+    font-size: 1.25rem;
+  }
+}
+
+/* Panel: switch to compact layout below 400px */
+@container panel (max-width: 400px) {
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Scroll-driven animations (2026 CSS) ─────────────────────────── */
+
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(1.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Reveal cards on scroll — progressive enhancement */
+@utility scroll-reveal {
+  animation: slide-in-up linear both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 40%;
+}
+
+@utility scroll-scale {
+  animation: scale-in linear both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 35%;
+}
+
+/* Fallback: elements visible by default when scroll-timeline not supported */
+@supports not (animation-timeline: view()) {
+  .scroll-reveal,
+  .scroll-scale {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Typography (2026 CSS) ───────────────────────────────────────── */
+
+/* Balanced headings — prevents orphans and awkward line breaks */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+/* Pretty body text — smarter line breaks for readability */
+p, li, figcaption {
+  text-wrap: pretty;
+}
+
+/* ── Font optimization — explicit fallback chain + display swap ─── */
+
+body {
+  font-family:
+    "Inter var", Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Noto Sans", "Liberation Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  font-optical-sizing: auto;
+  font-feature-settings: "cv11", "ss01"; /* contextual alt + open digits */
+}
+
+/* ── Modern UI 2026 — Gradient borders, glow effects, animations ──── */
+
+/* Animated gradient border */
+@utility gradient-border {
+  position: relative;
+  background: var(--theme-card-bg);
+  border-radius: var(--radius-xl);
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--color-primary-400), var(--color-accent-400));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Glow effect — primary */
+@utility glow-primary {
+  box-shadow: 0 0 20px rgba(13, 148, 136, 0.15), 0 0 60px rgba(13, 148, 136, 0.05);
+}
+
+.dark .glow-primary {
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.2), 0 0 60px rgba(20, 184, 166, 0.08);
+}
+
+/* Pulse dot — live status indicator */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+
+@utility pulse-dot {
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+/* Animated gradient mesh background for welcome/auth pages */
+@keyframes mesh-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@utility mesh-gradient-animated {
+  background: linear-gradient(
+    -45deg,
+    oklch(0.97 0.02 175),
+    oklch(0.96 0.03 260),
+    oklch(0.97 0.02 90),
+    oklch(0.98 0.01 175)
+  );
+  background-size: 400% 400%;
+  animation: mesh-shift 15s ease infinite;
+}
+
+.dark .mesh-gradient-animated {
+  background: linear-gradient(
+    -45deg,
+    oklch(0.14 0.03 175),
+    oklch(0.13 0.03 260),
+    oklch(0.14 0.02 90),
+    oklch(0.15 0.02 175)
+  );
+  background-size: 400% 400%;
+}
+
+/* Shimmer effect for loading buttons */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@utility btn-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-primary-600) 0%,
+    var(--color-primary-400) 50%,
+    var(--color-primary-600) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* SPA route transitions via View Transitions API */
+::view-transition-old(root) {
+  animation: vt-fade-out 120ms ease-out;
+}
+::view-transition-new(root) {
+  animation: vt-fade-in 180ms ease-in;
+}
+@keyframes vt-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes vt-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0s;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   Density — user-pickable spacing scale. Applied via [data-density=…] on <html>
+   by the useDensity() hook (src/hooks/useDensity.ts). Changing the attribute
+   reflows the whole app via CSS custom properties — no component re-mount.
+
+   Scales map to the shared Tailwind spacing scale so custom CSS doesn't fight
+   existing utility classes.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --density-row-gap: 0.75rem;
+  --density-card-padding: 1.25rem;
+  --density-nav-item-py: 0.5rem;
+  --density-text-scale: 1;
+}
+
+[data-density="compact"] {
+  --density-row-gap: 0.5rem;
+  --density-card-padding: 0.875rem;
+  --density-nav-item-py: 0.375rem;
+  --density-text-scale: 0.95;
+}
+
+[data-density="cozy"] {
+  --density-row-gap: 0.75rem;
+  --density-card-padding: 1.25rem;
+  --density-nav-item-py: 0.5rem;
+  --density-text-scale: 1;
+}
+
+[data-density="comfortable"] {
+  --density-row-gap: 1rem;
+  --density-card-padding: 1.75rem;
+  --density-nav-item-py: 0.625rem;
+  --density-text-scale: 1.05;
+}
+
+.density-card {
+  padding: var(--density-card-padding);
+}
+
+.density-rows > * + * {
+  margin-top: var(--density-row-gap);
+}
+
+/* ── Welcome page animations — pure CSS (replaces framer-motion) ─────
+   Removing framer-motion from /welcome saves ~50KB on the public-route
+   bundle. These keyframes recreate the original entrance animations:
+   - welcome-fade-in: opacity 0→1
+   - welcome-fade-in-left: opacity + translateX
+   - welcome-fade-in-up: opacity + translateY
+   - welcome-greeting-enter: opacity + translateY (re-fires on key change)
+   - welcome-press: subtle hover/active scale (was framer's whileTap)
+   - welcome-collapse: grid-rows 0fr↔1fr trick for animated height: auto
+   `prefers-reduced-motion: reduce` zeroes durations via the global rule
+   already in this file (line ~460).
+   ──────────────────────────────────────────────────────────────────── */
+
+@keyframes welcome-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes welcome-fade-in-left {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes welcome-fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes welcome-greeting-enter {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.welcome-fade-in {
+  animation: welcome-fade-in 400ms ease-out both;
+}
+
+.welcome-fade-in-left {
+  animation: welcome-fade-in-left 400ms ease-out both;
+}
+
+.welcome-fade-in-up {
+  animation: welcome-fade-in-up 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.welcome-greeting-enter {
+  animation: welcome-greeting-enter 350ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.welcome-delay-200 { animation-delay: 200ms; }
+.welcome-delay-400 { animation-delay: 400ms; }
+.welcome-delay-600 { animation-delay: 600ms; }
+
+.welcome-press {
+  transition: transform 120ms ease;
+}
+.welcome-press:hover { transform: scale(1.03); }
+.welcome-press:active { transform: scale(0.97); }
+
+/* Animated height: auto via grid-rows 0fr↔1fr — replaces framer-motion's
+   exit/enter height collapse. Inner wrapper handles overflow-hidden. */
+.welcome-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 250ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 200ms ease;
+}
+
+.welcome-collapse-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.welcome-collapse-inner {
+  overflow: hidden;
+  min-height: 0;
+}

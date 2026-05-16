@@ -1,0 +1,48 @@
+# docker-compose.india.yml
+# ParkIndia Docker Compose override — India-specific settings.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.india.yml up
+#
+# What this does:
+#  - Sets timezone to Asia/Kolkata (IST)
+#  - Disables any external analytics containers
+#  - Sets data residency flag
+#  - Adds India-specific env vars
+#  - Does NOT pull any analytics image (Plausible / Matomo removed)
+
+services:
+
+  app:
+    environment:
+      TZ: "Asia/Kolkata"
+      APP_NAME: "ParkIndia"
+      DATA_RESIDENCY: "india"
+      APP_FAKER_LOCALE: "en_IN"
+      # Disable external outbound analytics calls
+      DISABLE_ANALYTICS: "true"
+      # Mappls key (override in production)
+      MAPPLS_API_KEY: "${MAPPLS_API_KEY:-your_mappls_api_key_here}"
+      PARKING_AVAILABILITY_CACHE_MINUTES: "${PARKING_AVAILABILITY_CACHE_MINUTES:-10}"
+      DEFAULT_CITY: "Mumbai"
+      DEFAULT_LAT: "19.0760"
+      DEFAULT_LNG: "72.8777"
+    volumes:
+      # Ensure all storage stays local — no S3 mounts
+      - ./storage:/var/www/html/storage:rw
+
+  # Override the db service to use IST timezone
+  db:
+    environment:
+      TZ: "Asia/Kolkata"
+    command: >
+      --default-time-zone='+05:30'
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+# No Plausible / Matomo analytics services — all data stays local.
+# External analytics would send user data outside India (non-compliant).
+
+networks:
+  default:
+    name: parkindia_network

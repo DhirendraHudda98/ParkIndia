@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreZoneRequest;
+use App\Http\Resources\ZoneResource;
+use App\Models\Zone;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+
+class ZoneController extends Controller
+{
+    public function index(string $lotId): AnonymousResourceCollection
+    {
+        return ZoneResource::collection(Zone::where('lot_id', $lotId)->get());
+    }
+
+    public function store(StoreZoneRequest $request, string $lotId)
+    {
+        $zone = Zone::create(array_merge($request->only(['name', 'color', 'description']), ['lot_id' => $lotId]));
+
+        return ZoneResource::make($zone)->response()->setStatusCode(201);
+    }
+
+    public function update(Request $request, string $lotId, string $id)
+    {
+        $zone = Zone::where('lot_id', $lotId)->findOrFail($id);
+        $zone->update($request->only(['name', 'color', 'description']));
+
+        return ZoneResource::make($zone);
+    }
+
+    public function destroy(string $lotId, string $id): JsonResponse
+    {
+        Zone::where('lot_id', $lotId)->findOrFail($id)->delete();
+
+        return response()->json(['message' => 'Deleted']);
+    }
+}

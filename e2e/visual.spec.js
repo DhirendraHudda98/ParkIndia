@@ -1,0 +1,171 @@
+import { test, expect } from "@playwright/test";
+import { loginViaUi } from "./helpers";
+
+/**
+ * Visual regression suite — T-1770.
+ *
+ * Snapshots are keyed by `{surface}-{viewport}-{theme}`. We pin viewport
+ * dimensions explicitly (not via Playwright device presets) so the same
+ * baseline file is reused across every project; the device-specific suffix
+ * still comes from the project name Playwright appends. Running this spec
+ * only under the `chromium` project keeps baselines single-variant and
+ * linux-x64-pinned so CI (ubuntu-latest) and local Linux devs match.
+ *
+ * Tolerances:
+ *   - `maxDiffPixelRatio: 0.02` = 2% — absorbs anti-aliasing jitter and
+ *     font hinting without swallowing real layout regressions.
+ *   - `animations: 'disabled'` — Playwright freezes CSS transitions.
+ *   - We explicitly nuke animations/transitions via addStyleTag as a
+ *     belt-and-braces guard.
+ */
+
+const SURFACES = [
+  // Public
+  { name: "login", path: "/login", auth: false },
+  { name: "register", path: "/register", auth: false },
+  { name: "forgot-password", path: "/forgot-password", auth: false },
+  { name: "welcome", path: "/welcome", auth: false },
+  // Authenticated user
+  { name: "dashboard", path: "/", auth: true },
+  { name: "book", path: "/book", auth: true },
+  { name: "bookings", path: "/bookings", auth: true },
+  { name: "vehicles", path: "/vehicles", auth: true },
+  { name: "credits", path: "/credits", auth: true },
+  { name: "favorites", path: "/favorites", auth: true },
+  { name: "absences", path: "/absences", auth: true },
+  { name: "notifications", path: "/notifications", auth: true },
+  { name: "calendar", path: "/calendar", auth: true },
+  { name: "profile", path: "/profile", auth: true },
+  // Admin
+  { name: "admin", path: "/admin", auth: true },
+  { name: "admin-modules", path: "/admin/modules", auth: true },
+  { name: "admin-settings", path: "/admin/settings", auth: true },
+  { name: "admin-users", path: "/admin/users", auth: true },
+  { name: "admin-lots", path: "/admin/lots", auth: true },
+  { name: "admin-analytics", path: "/admin/analytics", auth: true },
+];
+
+const VIEWPORTS = [
+  { name: "desktop", width: 1440, height: 900 },
+  { name: "mobile", width: 390, height: 844 },
+];
+
+const THEMES = ["light", "dark"];
+
+for (const viewport of VIEWPORTS) {
+  for (const theme of THEMES) {
+    test.describe(`visual — ${viewport.name} ${theme}`, () => {
+      // Only run visual suite under the default chromium project so snapshot
+      // filenames stay deterministic. Mobile projects already cover their own
+      // functional viewports in other specs.
+      test.beforeEach(({}, testInfo) => {
+        test.skip(
+          testInfo.project.name !== "chromium",
+          "visual regression runs under chromium project only",
+        );
+      });
+      test.use({
+        viewport: { width: viewport.width, height: viewport.height },
+      });
+
+      for (const surface of SURFACES) {
+        test(`${surface.name}`, async ({ page }) => {
+          if (surface.auth) {
+            await loginViaUi(page);
+          }
+
+          // Apply theme before navigating to the target page so the first
+          // render already honours it — avoids a FOUC flash that would
+          // otherwise bleed into the screenshot.
+          if (theme === "dark") {
+            await page.addInitScript(() => {
+              try {
+                localStorage.setItem("parkhub_theme", "dark");
+              } catch {
+                /* quota / private mode */
+              }
+            });
+          }
+
+          await page.goto(surface.path, { waitUntil: "domcontentloaded" });
+
+          if (theme === "dark") {
+            await page.evaluate(() => {
+              document.documentElement.classList.add("dark");
+              document.documentElement.setAttribute("data-theme", "dark");
+            });
+          }
+
+          // Neutralise anything animated/time-dependent that could cause
+          // per-run drift:
+          //   - CSS animations/transitions pin at frame 0
+          //   - caret blink removed
+          //   - DemoOverlay (live countdown + vote counter + "Xs ago"
+          //     relative timestamps) hidden — this is the production demo
+          //     banner, not a real UI surface under test
+          //   - ToastContainer hidden — async toasts fire-and-forget
+          //   - 3rd-party chart/mapbox canvases neutralised (they render
+          //     slightly differently each mount)
+          await page.addStyleTag({
+            content: `
+              *, *::before, *::after {
+                animation-duration: 0s !important;
+                animation-delay: 0s !important;
+                transition-duration: 0s !important;
+                transition-delay: 0s !important;
+                caret-color: transparent !important;
+              }
+              [data-demo-overlay],
+              .demo-overlay,
+              .Toastify,
+              .Toastify__toast-container,
+              [data-testid="live-counter"],
+              [data-testid="timestamp"],
+              .leaflet-container,
+              canvas {
+                visibility: hidden !important;
+              }
+            `,
+          });
+
+          // Wait for network-idle so lazy chunks land; then give React a
+          // micro-task tick to paint the settled DOM.
+          await page
+            .waitForLoadState("networkidle", { timeout: 10_000 })
+            .catch(() => {
+              /* some pages stream long-poll — fall through */
+            });
+          // Hard-wait past the "Loading ParkHub" splash. Without this the
+          // very first paint can land in the screenshot and cause a bogus
+          // diff against the real UI baseline.
+          await page
+            .waitForFunction(
+              () =>
+                !/^\s*P?\s*$/.test(document.body?.textContent ?? "") &&
+                !/Loading ParkHub/i.test(document.body?.textContent ?? ""),
+              null,
+              { timeout: 10_000 },
+            )
+            .catch(() => {
+              /* some static pages (e.g. /login) may settle instantly — fall through */
+            });
+          await page.waitForTimeout(800);
+
+          await expect(page).toHaveScreenshot(
+            `${surface.name}-${viewport.name}-${theme}.png`,
+            {
+              // 0.05 absorbs inter-runner drift (font hinting, subpixel AA)
+              // between the baseline-generation environment and the
+              // GitHub-hosted runner, while still catching layout-scale
+              // regressions. 0.02 was too tight: CI drifted 0.03–0.04 on
+              // green runs.
+              maxDiffPixelRatio: 0.05,
+              fullPage: false,
+              animations: "disabled",
+            },
+          );
+        });
+      }
+    });
+  }
+}

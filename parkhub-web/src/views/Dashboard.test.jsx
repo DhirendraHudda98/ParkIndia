@@ -1,0 +1,383 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import React from 'react';
+import { render, screen, waitFor, within } from '@testing-library/react';
+// ── Mocks ──
+const mockGetBookings = vi.fn();
+const mockGetUserStats = vi.fn();
+const mockGetCo2Summary = vi.fn();
+const mockUseNavLayout = vi.fn();
+const mockUseTheme = vi.fn();
+vi.mock('react-router-dom', () => ({
+    Link: ({ to, children, ...props }) => <a href={to} {...props}>{children}</a>,
+}));
+vi.mock('../context/AuthContext', () => ({
+    useAuth: () => ({
+        user: {
+            id: 'u-1',
+            username: 'florian',
+            name: 'Florian Test',
+            email: 'f@test.com',
+            role: 'admin',
+            credits_balance: 7,
+            credits_monthly_quota: 10,
+        },
+    }),
+}));
+vi.mock('../hooks/useNavLayout', () => ({
+    useNavLayout: () => mockUseNavLayout(),
+}));
+vi.mock('../context/ThemeContext', () => ({
+    useTheme: () => mockUseTheme(),
+}));
+vi.mock('../api/client', () => ({
+    api: {
+        getBookings: (...args) => mockGetBookings(...args),
+        getUserStats: (...args) => mockGetUserStats(...args),
+        getCo2Summary: (...args) => mockGetCo2Summary(...args),
+    },
+}));
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key, opts) => {
+            const map = {
+                'dashboard.morning': 'Morning',
+                'dashboard.afternoon': 'Afternoon',
+                'dashboard.evening': 'Evening',
+                'dashboard.greeting': `Good ${opts?.timeOfDay}, ${opts?.name}`,
+                'dashboard.activeBookings': 'Active Bookings',
+                'dashboard.creditsLeft': 'Credits Left',
+                'dashboard.thisMonth': 'This Month',
+                'dashboard.nextBooking': 'Next Booking',
+                'dashboard.noActiveBookings': 'No active bookings',
+                'dashboard.bookSpot': 'Book a Spot',
+                'dashboard.emptyBookingsTitle': 'No active bookings yet',
+                'dashboard.emptyBookingsSubtitle': 'Reserve a spot and it will show up right here.',
+                'dashboard.emptyBookingsPrimary': 'Book your first spot',
+                'dashboard.emptyBookingsSecondary': 'Open command palette',
+                'dashboard.quickActions': 'Quick Actions',
+                'dashboard.myVehicles': 'My Vehicles',
+                'dashboard.viewBookings': 'View Bookings',
+                'dashboard.slot': 'Slot',
+                'nav.bookings': 'Bookings',
+                'nav.credits': 'Credits',
+                'bookings.statusActive': 'Active',
+                'dashboard.live': 'Live',
+                'dashboard.wsConnected': 'Live updates active',
+                'dashboard.wsBookingCreated': 'New booking created',
+                'dashboard.wsBookingCancelled': 'A booking was cancelled',
+                'dashboard.wsOccupancyChanged': 'Occupancy updated',
+                'dashboard.totalBookings': 'Total Bookings',
+                'dashboard.weeklyActivityTitle': 'Weekly Activity',
+                'dashboard.weeklyActivitySubtitle': 'Booking volume',
+                'dashboard.period7d': '7 Days',
+                'dashboard.period30d': '30 Days',
+                'dashboard.liveSensorFeed': 'Live Sensor Feed',
+                'dashboard.sensorFeedSubtitle': 'Real-time gate status',
+                'dashboard.recentActivity': 'Recent Activity',
+                'dashboard.noActivity': 'No recent activity yet',
+                'dashboard.unknownVehicle': 'Unknown vehicle',
+                'dashboard.entranceGateA': 'Entrance Gate A',
+                'dashboard.entranceGateB': 'Entrance Gate B',
+                'dashboard.exitGate': 'Exit Gate',
+                'dashboard.colVehicleOwner': 'Vehicle / Location',
+                'dashboard.colSlot': 'Slot No.',
+                'dashboard.colCheckIn': 'Check-In Time',
+                'dashboard.colDuration': 'Duration',
+                'dashboard.colStatus': 'Status',
+                'dashboard.statistics': 'Statistics',
+                'dashboard.loadingDashboard': 'Loading dashboard',
+            };
+            return map[key] || key;
+        },
+    }),
+}));
+vi.mock('framer-motion', () => ({
+    motion: {
+        div: React.forwardRef(({ children, variants, initial, animate, exit, transition, whileHover, whileTap, ...props }, ref) => (<div ref={ref} {...props}>{children}</div>)),
+    },
+    AnimatePresence: ({ children }) => <>{children}</>,
+}));
+vi.mock('@phosphor-icons/react', () => ({
+    CalendarCheck: (props) => <span data-testid="icon-calendar-check" {...props}/>,
+    Car: (props) => <span data-testid="icon-car" {...props}/>,
+    Coins: (props) => <span data-testid="icon-coins" {...props}/>,
+    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
+    CalendarPlus: (props) => <span data-testid="icon-calendar-plus" {...props}/>,
+    ArrowRight: (props) => <span data-testid="icon-arrow-right" {...props}/>,
+    TrendUp: (props) => <span data-testid="icon-trend-up" {...props}/>,
+    MapPin: (props) => <span data-testid="icon-map-pin" {...props}/>,
+    ChartLine: (props) => <span data-testid="icon-chart-line" {...props}/>,
+    Gauge: (props) => <span data-testid="icon-gauge" {...props}/>,
+    CurrencyDollar: (props) => <span data-testid="icon-dollar" {...props}/>,
+    Timer: (props) => <span data-testid="icon-timer" {...props}/>,
+    ArrowUp: (props) => <span data-testid="icon-arrow-up" {...props}/>,
+    ArrowDown: (props) => <span data-testid="icon-arrow-down" {...props}/>,
+    CircleDashed: (props) => <span data-testid="icon-circle-dashed" {...props}/>,
+    Leaf: (props) => <span data-testid="icon-leaf" {...props}/>,
+}));
+vi.mock('../components/KineticObservatory', () => ({
+    KpiCard: ({ label, value, live, delta, ...rest }) => {
+        // Honor a caller-provided data-testid (Dashboard sets kpi-active-bookings,
+        // kpi-credits, kpi-this-month, kpi-total, kpi-co2-saved). Fall back to a
+        // label-derived id so tests can still find ad-hoc cards by label.
+        const testid = rest['data-testid'] || `kpi-${String(label).toLowerCase().replace(/\s+/g, '-')}`;
+        return (<div data-testid={testid}>
+        <span>{label}</span>
+        <span>{value}</span>
+        {live && <span data-testid="live-badge">Live</span>}
+        {delta && <span data-testid="delta-badge">{delta.value}{delta.suffix || '%'}</span>}
+      </div>);
+    },
+    TrendCard: ({ title, subtitle, periods, activePeriod, onPeriodChange }) => (<section data-testid="trend-card">
+      <h3>{title}</h3>
+      {subtitle && <p>{subtitle}</p>}
+      {periods?.map((p) => (<button key={p.key} onClick={() => onPeriodChange?.(p.key)} aria-pressed={activePeriod === p.key}>
+          {p.label}
+        </button>))}
+    </section>),
+    SensorFeedCard: ({ title, sensors }) => (<section data-testid="sensor-feed-card">
+      <h3>{title}</h3>
+      <ul>
+        {sensors?.map((s) => (<li key={s.name} data-testid={`sensor-${s.name.toLowerCase().replace(/\s+/g, '-')}`}>
+            {s.name} — {s.status}
+          </li>))}
+      </ul>
+    </section>),
+    RecentActivityCard: ({ title, rows, emptyText }) => (<section data-testid="recent-activity-card">
+      <h3>{title}</h3>
+      {rows?.length === 0 ? <p>{emptyText}</p> : (<table data-testid="recent-activity-table">
+          {rows?.map((r) => <tr key={r.id} data-testid={`activity-row-${r.id}`}><td>{r.vehicle}</td></tr>)}
+        </table>)}
+    </section>),
+}));
+vi.mock('../components/Skeleton', () => ({
+    DashboardSkeleton: () => <div data-testid="dashboard-skeleton">Loading...</div>,
+}));
+vi.mock('../constants/animations', () => ({
+    staggerSlow: { hidden: {}, show: {} },
+    fadeUp: { hidden: {}, show: {} },
+}));
+const mockUseWebSocket = vi.fn().mockReturnValue({ connected: false, lastMessage: null, occupancy: {} });
+vi.mock('../hooks/useWebSocket', () => ({
+    useWebSocket: (...args) => mockUseWebSocket(...args),
+}));
+vi.mock('../components/SimpleChart', () => ({
+    BarChart: ({ data }) => <div data-testid="bar-chart">{data?.length} bars</div>,
+}));
+import { DashboardPage } from './Dashboard';
+describe('DashboardPage', () => {
+    beforeEach(() => {
+        mockGetBookings.mockClear();
+        mockGetUserStats.mockClear();
+        mockGetCo2Summary.mockClear();
+        mockUseNavLayout.mockReset();
+        mockUseNavLayout.mockReturnValue(['classic', vi.fn()]);
+        mockUseTheme.mockReset();
+        mockUseTheme.mockReturnValue({ designTheme: 'classic' });
+        // Default: CO2 endpoint returns a fresh summary. Individual tests
+        // can override.
+        mockGetCo2Summary.mockResolvedValue({
+            success: true,
+            data: {
+                from: '2026-03-18T00:00:00Z',
+                to: '2026-04-17T00:00:00Z',
+                bookings_counted: 0,
+                total_km: 0,
+                emitted_g: 0,
+                counterfactual_g: 0,
+                saved_g: 0,
+                carpool_saved_g: 0,
+                saved_kg: 0,
+            },
+        });
+    });
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+    it('shows loading skeleton initially', () => {
+        mockGetBookings.mockReturnValue(new Promise(() => { }));
+        mockGetUserStats.mockReturnValue(new Promise(() => { }));
+        mockGetCo2Summary.mockReturnValue(new Promise(() => { }));
+        render(<DashboardPage />);
+        expect(screen.getByTestId('dashboard-skeleton')).toBeInTheDocument();
+    });
+    it('renders the Marble surface when dock layout is selected', async () => {
+        mockUseNavLayout.mockReturnValue(['dock', vi.fn()]);
+        mockGetBookings.mockResolvedValue({
+            success: true,
+            data: [{
+                    id: 'b-1',
+                    lot_id: 'lot-1',
+                    lot_name: 'HQ West',
+                    slot_number: 'A-12',
+                    vehicle_plate: 'HB-PH 1',
+                    status: 'active',
+                    start_time: new Date(Date.now() - 30 * 60_000).toISOString(),
+                    end_time: new Date(Date.now() + 90 * 60_000).toISOString(),
+                }],
+        });
+        mockGetUserStats.mockResolvedValue({ success: true, data: { total_bookings: 12, bookings_this_month: 4 } });
+        render(<DashboardPage />);
+        await waitFor(() => expect(screen.getByTestId('marble-surface')).toBeInTheDocument());
+        expect(screen.getByText(/Today at a glance/i)).toBeInTheDocument();
+        expect(screen.getByText(/Fast chargers available/i)).toBeInTheDocument();
+        expect(screen.getByText(/Operational stream/i)).toBeInTheDocument();
+    });
+    it('renders the Void surface when focus layout is selected', async () => {
+        mockUseNavLayout.mockReturnValue(['focus', vi.fn()]);
+        mockGetBookings.mockResolvedValue({
+            success: true,
+            data: [{
+                    id: 'b-2',
+                    lot_id: 'lot-2',
+                    lot_name: 'Garage North',
+                    slot_number: 'B-03',
+                    vehicle_plate: 'HB-PH 2',
+                    status: 'active',
+                    start_time: new Date(Date.now() - 15 * 60_000).toISOString(),
+                    end_time: new Date(Date.now() + 60 * 60_000).toISOString(),
+                }],
+        });
+        mockGetUserStats.mockResolvedValue({ success: true, data: { total_bookings: 18, bookings_this_month: 7 } });
+        render(<DashboardPage />);
+        await waitFor(() => expect(screen.getByTestId('void-surface')).toBeInTheDocument());
+        expect(screen.getByText(/Editorial operations/i)).toBeInTheDocument();
+        expect(screen.getByText(/Occupancy board/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Operational stream/i).length).toBeGreaterThanOrEqual(1);
+    });
+    it('renders greeting with user name after loading', async () => {
+        mockGetBookings.mockResolvedValue({ success: true, data: [] });
+        mockGetUserStats.mockResolvedValue({
+            success: true,
+            data: { total_bookings: 10, bookings_this_month: 3, homeoffice_days_this_month: 2, avg_duration_minutes: 60 },
+        });
+        render(<DashboardPage />);
+        await waitFor(() => {
+            expect(screen.getByText(/Florian/)).toBeInTheDocument();
+        });
+    });
+    it('renders stat cards', async () => {
+        mockGetBookings.mockResolvedValue({ success: true, data: [] });
+        mockGetUserStats.mockResolvedValue({
+            success: true,
+            data: { total_bookings: 10, bookings_this_month: 3, homeoffice_days_this_month: 2, avg_duration_minutes: 60 },
+        });
+        render(<DashboardPage />);
+        // All five KPI cards render with stable test-ids (post-KpiCard migration)
+        await waitFor(() => {
+            expect(screen.getByTestId('kpi-active-bookings')).toBeInTheDocument();
+        });
+        expect(screen.getByTestId('kpi-credits')).toBeInTheDocument();
+        expect(screen.getByTestId('kpi-this-month')).toBeInTheDocument();
+        expect(screen.getByTestId('kpi-total')).toBeInTheDocument();
+        expect(screen.getByTestId('kpi-co2-saved')).toBeInTheDocument();
+        // Credits card shows the value from useAuth (credits_balance: 7)
+        expect(within(screen.getByTestId('kpi-credits')).getByText('7')).toBeInTheDocument();
+        // Total bookings from userStats
+        expect(within(screen.getByTestId('kpi-total')).getByText('10')).toBeInTheDocument();
+        // This Month from userStats
+        expect(within(screen.getByTestId('kpi-this-month')).getByText('3')).toBeInTheDocument();
+    });
+    it('shows empty state when no active bookings', async () => {
+        mockGetBookings.mockResolvedValue({ success: true, data: [] });
+        mockGetUserStats.mockResolvedValue({ success: true, data: null });
+        render(<DashboardPage />);
+        await waitFor(() => {
+            // New onboarding empty state: headline + subtitle + primary CTA + secondary ghost button
+            expect(screen.getByText('No active bookings yet')).toBeInTheDocument();
+        });
+        expect(screen.getByText('Reserve a spot and it will show up right here.')).toBeInTheDocument();
+        expect(screen.getByText('Book your first spot')).toBeInTheDocument();
+        expect(screen.getByText('Open command palette')).toBeInTheDocument();
+        // Primary CTA links to /book
+        expect(screen.getByText('Book your first spot').closest('a')).toHaveAttribute('href', '/book');
+        // Quick actions still render the "Book a Spot" action card
+        expect(screen.getAllByText('Book a Spot').length).toBeGreaterThanOrEqual(1);
+    });
+    it('shows active bookings when present', async () => {
+        mockGetBookings.mockResolvedValue({
+            success: true,
+            data: [
+                {
+                    id: 'b-1',
+                    user_id: 'u-1',
+                    lot_id: 'l-1',
+                    slot_id: 's-1',
+                    lot_name: 'Garage Alpha',
+                    slot_number: 'A1',
+                    vehicle_plate: 'M-AB 123',
+                    start_time: new Date().toISOString(),
+                    end_time: new Date(Date.now() + 3600000).toISOString(),
+                    status: 'active',
+                },
+            ],
+        });
+        mockGetUserStats.mockResolvedValue({ success: true, data: null });
+        render(<DashboardPage />);
+        await waitFor(() => {
+            expect(screen.getByText('Garage Alpha')).toBeInTheDocument();
+        });
+        // Slot number appears in both the badge and inline
+        expect(screen.getAllByText('A1').length).toBeGreaterThanOrEqual(1);
+        // Vehicle plate is inside a div with other text, use regex
+        expect(screen.getAllByText(/M-AB 123/).length).toBeGreaterThan(0);
+        // Active status badge
+        expect(screen.getAllByText('Active').length).toBeGreaterThanOrEqual(1);
+    });
+    it('renders quick actions with links', async () => {
+        mockGetBookings.mockResolvedValue({ success: true, data: [] });
+        mockGetUserStats.mockResolvedValue({ success: true, data: null });
+        render(<DashboardPage />);
+        await waitFor(() => {
+            expect(screen.getByText('Quick Actions')).toBeInTheDocument();
+        });
+        // Book a Spot appears multiple times (empty state + quick action)
+        expect(screen.getAllByText('Book a Spot').length).toBeGreaterThanOrEqual(1);
+        expect(screen.getByText('My Vehicles')).toBeInTheDocument();
+        expect(screen.getByText('View Bookings')).toBeInTheDocument();
+        expect(screen.getByText('Credits')).toBeInTheDocument();
+    });
+    it('shows live indicator when WebSocket is connected', async () => {
+        mockUseWebSocket.mockReturnValue({ connected: true, lastMessage: null, occupancy: {} });
+        mockGetBookings.mockResolvedValue({ success: true, data: [] });
+        mockGetUserStats.mockResolvedValue({ success: true, data: null });
+        render(<DashboardPage />);
+        await waitFor(() => {
+            expect(screen.getByTestId('ws-connected-indicator')).toBeInTheDocument();
+        });
+        expect(screen.getByText('Live')).toBeInTheDocument();
+    });
+    it('hides live indicator when WebSocket is disconnected', async () => {
+        mockUseWebSocket.mockReturnValue({ connected: false, lastMessage: null, occupancy: {} });
+        mockGetBookings.mockResolvedValue({ success: true, data: [] });
+        mockGetUserStats.mockResolvedValue({ success: true, data: null });
+        render(<DashboardPage />);
+        await waitFor(() => {
+            expect(screen.getByText(/Good/)).toBeInTheDocument();
+        });
+        expect(screen.queryByTestId('ws-connected-indicator')).not.toBeInTheDocument();
+    });
+    it('renders bookings link pointing to /bookings', async () => {
+        mockGetBookings.mockResolvedValue({ success: true, data: [] });
+        mockGetUserStats.mockResolvedValue({ success: true, data: null });
+        render(<DashboardPage />);
+        await waitFor(() => {
+            expect(screen.getByText('Bookings')).toBeInTheDocument();
+        });
+        expect(screen.getByText('Bookings').closest('a')).toHaveAttribute('href', '/bookings');
+    });
+    it('websocket handler routes all three event types without throwing', async () => {
+        mockGetBookings.mockResolvedValue({ success: true, data: [] });
+        mockGetUserStats.mockResolvedValue({ success: true, data: null });
+        let captured;
+        mockUseWebSocket.mockImplementation((opts) => {
+            captured = opts?.onEvent;
+            return { connected: false, lastMessage: null, occupancy: {} };
+        });
+        render(<DashboardPage />);
+        await waitFor(() => expect(screen.getByText(/Good/)).toBeInTheDocument());
+        expect(() => captured?.({ event: 'booking_created', lot_id: 'l1' })).not.toThrow();
+        expect(() => captured?.({ event: 'booking_cancelled', lot_id: 'l1' })).not.toThrow();
+        expect(() => captured?.({ event: 'occupancy_changed', lot_id: 'l1', occupancy: 5 })).not.toThrow();
+    });
+});

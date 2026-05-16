@@ -1,0 +1,67 @@
+/vendor/
+/node_modules/
+/.env
+/.env.*
+!/.env.example
+!/docker-compose.override.yml.example
+/database/database.sqlite
+/storage/*.key
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+.idea
+.vscode
+build-shared/
+*.zip
+
+# Certificate and key files — never commit private keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# Database files
+*.sqlite
+*.db
+
+# Dead code backup
+resources/js/src.bak/
+/public/assets/
+.gstack/
+
+# Astro build output — Dockerfile builds parkhub-web/ and copies dist/ -> public/
+/public/_astro/
+/public/index.html
+/public/v5/
+/public/manifest.json
+/public/sw.js
+/public/offline.html
+/public/og-image.svg
+/public/favicon.ico
+/public/favicon.svg
+/public/icons/icon-*.png
+
+# Claude Code
+/.claude/
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+
+# Local dev tooling (not for public repo)
+.aoe/
+.forge-operator/
+.fop/
+skills-lock.json
+
+# Infection mutation testing reports
+/.infection/

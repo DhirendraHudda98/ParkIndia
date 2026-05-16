@@ -1,0 +1,70 @@
+import React from 'react';
+import i18n from '../i18n';
+import { CarFront, RefreshCw, TriangleAlert } from 'lucide-react';
+
+export class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('[ErrorBoundary]', error, errorInfo);
+
+    // Dispatch structured error event for external integrations (Sentry, etc.)
+    window.dispatchEvent(new CustomEvent('app:error', {
+      detail: {
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        timestamp: new Date().toISOString(),
+      },
+    }));
+  }
+
+  handleReload = () => {
+    window.location.reload();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div role="alert" className="min-h-dvh bg-white dark:bg-surface-950 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-6 max-w-sm text-center px-6">
+            <div className="w-16 h-16 rounded-xl bg-primary-600 flex items-center justify-center">
+              <CarFront className="w-8 h-8 text-white" />
+            </div>
+
+            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <TriangleAlert className="w-5 h-5" />
+              <h1 className="text-lg font-semibold">{i18n.t('errorBoundary.title')}</h1>
+            </div>
+
+            <p className="text-sm text-surface-500 dark:text-surface-400">
+              {i18n.t('errorBoundary.description')}
+            </p>
+
+            {this.state.error && (
+              <pre className="text-xs text-left w-full bg-surface-100 dark:bg-surface-800 rounded-xl p-4 overflow-auto max-h-32 text-surface-600 dark:text-surface-400">
+                {this.state.error.message}
+              </pre>
+            )}
+
+            <button onClick={this.handleReload} className="btn btn-primary">
+              <RefreshCw className="w-4 h-4" />
+              {i18n.t('errorBoundary.reload')}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;

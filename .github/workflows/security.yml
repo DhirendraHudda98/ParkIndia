@@ -1,0 +1,314 @@
+name: Security
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PHP_VERSION: '8.4'
+  NODE_VERSION: '22.12.0'
+
+jobs:
+  composer-audit:
+    name: Composer Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Audit production dependencies
+        run: composer audit --locked --no-dev
+
+  npm-audit:
+    name: npm Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Audit root npm dependencies
+        run: npm audit --package-lock-only --omit=dev --audit-level=high
+        continue-on-error: true
+
+      - name: Audit Astro npm dependencies
+        run: npm audit --prefix parkhub-web --package-lock-only --omit=dev --audit-level=high
+        continue-on-error: true
+
+  trivy-fs:
+    name: Trivy Filesystem Scan
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read         # checkout source for the scan
+      security-events: write # upload Trivy SARIF results to GitHub Security tab
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        continue-on-error: true
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,misconfig
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          # Skip helm/ — chart requires config.appKey at render time (provided
+          # via Vault/--set on real deploys). Helm misconfig scan would block
+          # trivy-fs CI on every push since values.yaml ships an empty appKey
+          # by design (security: no committed default). Privileged container
+          # checks are covered by the trivy-image scan against the built
+          # OCI artifact instead.
+          skip-dirs: helm/
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7 # v4
+        if: always() && hashFiles('trivy-results.sarif') != ''
+        with:
+          sarif_file: trivy-results.sarif
+
+  secret-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read      # checkout source for the secret scan
+      pull-requests: read # read PR base/head SHAs for scoped scan range
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # We invoke the gitleaks binary directly (MIT, github.com/gitleaks/gitleaks).
+      # The wrapper action gitleaks/gitleaks-action is published under a proprietary
+      # EULA since v2 and would violate our commercial-safe license doctrine.
+      - name: Install gitleaks
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Scan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            gitleaks detect --source=. --redact --verbose --no-banner \
+              --log-opts="--no-merges $BASE_SHA..$HEAD_SHA"
+          else
+            gitleaks detect --source=. --redact --verbose --no-banner
+          fi
+
+  typos:
+    name: Typos (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Advisory until typo backlog is cleared. Promote to required once green.
+    continue-on-error: true
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - name: Run typos
+        continue-on-error: true
+        uses: crate-ci/typos@cf5f1c29a8ac336af8568821ec41919923b05a83 # v1.45.1
+
+  zizmor:
+    name: Zizmor (GHA SAST, audit-mode)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Audit-mode: surface findings as informational; do NOT fail the gate yet.
+    # Promote findings to errors once the workflow inventory has been triaged.
+    continue-on-error: true
+    permissions:
+      contents: read         # checkout source for the SAST scan
+      security-events: write # upload Zizmor SARIF results to GitHub Security tab
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - name: Run zizmor
+        continue-on-error: true
+        uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e # v0.5.3
+        with:
+          # auditor persona surfaces low-severity findings useful for hardening
+          # without flooding the PR with regular-user noise. Keep this aligned
+          # with .github/scripts/fop-local-ci.sh: offline, high-severity-only,
+          # and scoped to workflow manifests so PR audits cannot hang on live
+          # GitHub API checks.
+          inputs: .github/workflows .gitea/workflows
+          persona: auditor
+          online-audits: false
+          min-severity: high
+
+  osv-scanner:
+    # Multi-ecosystem SCA via Google's osv-scanner against the OSV.dev DB.
+    # Apache-2.0 (github.com/google/osv-scanner). We invoke the binary directly
+    # (same posture as gitleaks/grype) rather than the google/osv-scanner-action
+    # wrapper to keep the action surface minimal and license-auditable. All
+    # workflow inputs come from controlled `env:` constants — there is no use
+    # of github.event.* untrusted strings (no injection surface).
+    #
+    # Why osv-scanner instead of Bearer/Semgrep: Bearer is Elastic License 2.0
+    # (source-available, banned per platform commercial-safe doctrine alongside
+    # BSL/SSPL/FSL). Semgrep is LGPL-2.1 (also banned). osv-scanner delivers
+    # the equivalent multi-ecosystem secure-supply-chain signal under Apache-2.0.
+    name: OSV-Scanner (multi-ecosystem SCA, advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Advisory until the open-finding inventory hits zero; mirror the typos +
+    # zizmor posture. Promote to required after triage.
+    continue-on-error: true
+    permissions:
+      contents: read         # checkout source + lockfiles for SCA
+      security-events: write # upload OSV-Scanner SARIF to GitHub Security tab
+    env:
+      OSV_SCANNER_VERSION: 2.3.5
+      OSV_SCANNER_SHA256: bb30c580afe5e757d3e959f4afd08a4795ea505ef84c46962b9a738aa573b41b
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Install osv-scanner
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/osv-scanner \
+            "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
+          echo "${OSV_SCANNER_SHA256}  /tmp/osv-scanner" | sha256sum -c -
+          chmod +x /tmp/osv-scanner
+          sudo mv /tmp/osv-scanner /usr/local/bin/osv-scanner
+          osv-scanner --version
+
+      - name: Scan composer + npm lockfiles (SARIF)
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          osv-scanner scan source \
+            --config=osv-scanner.toml \
+            -L composer.lock \
+            -L package-lock.json \
+            -L parkhub-web/package-lock.json \
+            --format=sarif \
+            --output=osv-scanner.sarif
+
+      - name: Upload OSV-Scanner SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7 # v4
+        if: always() && hashFiles('osv-scanner.sarif') != ''
+        continue-on-error: true
+        with:
+          sarif_file: osv-scanner.sarif
+          category: osv-scanner
+
+  trivy-image:
+    # SOTA-2026 image scanning — Trivy (Apache-2.0) + Grype (Apache-2.0) for a
+    # second opinion. The published image only exists after docker-publish.yml
+    # runs on main, so this job is skipped for PRs (no image to scan yet).
+    name: Trivy + Grype image scan
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read         # checkout for the .trivyignore
+      packages: read         # pull image from GHCR
+      security-events: write # upload Trivy SARIF to Security tab
+    env:
+      IMAGE_REF: ghcr.io/${{ github.repository }}:latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Log in to GHCR (read-only)
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Trivy image scan
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        continue-on-error: true
+        with:
+          image-ref: ${{ env.IMAGE_REF }}
+          scanners: vuln,misconfig,secret
+          format: sarif
+          output: trivy-image.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+
+      - name: Upload Trivy image SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7 # v4
+        if: always() && hashFiles('trivy-image.sarif') != ''
+        with:
+          sarif_file: trivy-image.sarif
+          category: trivy-image
+
+      # Grype as a defense-in-depth second opinion. We invoke the binary
+      # directly (Apache-2.0, github.com/anchore/grype) rather than the
+      # anchore/scan-action wrapper to avoid surface area and stay
+      # commercial-license-safe.
+      - name: Install grype
+        env:
+          GRYPE_VERSION: 0.111.1
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/grype.tar.gz \
+            "https://github.com/anchore/grype/releases/download/v${GRYPE_VERSION}/grype_${GRYPE_VERSION}_linux_amd64.tar.gz"
+          tar -xzf /tmp/grype.tar.gz -C /tmp grype
+          sudo mv /tmp/grype /usr/local/bin/grype
+          grype --version
+
+      - name: Run Grype image scan (defense-in-depth)
+        continue-on-error: true
+        env:
+          IMAGE: ${{ env.IMAGE_REF }}
+        run: |
+          set -euo pipefail
+          grype "registry:${IMAGE}" --only-fixed --fail-on critical -o table

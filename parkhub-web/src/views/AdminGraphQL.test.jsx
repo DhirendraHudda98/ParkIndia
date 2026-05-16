@@ -1,0 +1,101 @@
+import { describe, it, expect, vi } from 'vitest';
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key, fallback) => {
+            const map = {
+                'admin.overview': 'Overview',
+                'admin.settings': 'Settings',
+                'admin.users': 'Users',
+                'admin.lots': 'Lots',
+                'admin.announcements': 'Announcements',
+                'admin.reports': 'Reports',
+                'admin.translations': 'Translations',
+                'admin.rateLimits': 'Rate Limits',
+                'admin.tenants': 'Tenants',
+                'admin.auditLog': 'Audit Log',
+                'admin.dataManagement': 'Data',
+                'admin.fleet': 'Fleet',
+                'admin.accessible': 'Accessible',
+                'admin.maintenance': 'Maintenance',
+                'admin.billing': 'Billing',
+                'admin.visitors': 'Visitors',
+                'admin.chargers': 'EV Chargers',
+                'admin.plugins': 'Plugins',
+            };
+            return map[key] || fallback || key;
+        },
+    }),
+}));
+vi.mock('framer-motion', () => ({
+    motion: {
+        div: React.forwardRef(({ children, initial, animate, exit, transition, whileHover, whileTap, variants, custom, layoutId, ...props }, ref) => (<div ref={ref} {...props}>{children}</div>)),
+        aside: React.forwardRef(({ children, initial, animate, exit, transition, whileHover, whileTap, variants, custom, layoutId, ...props }, ref) => (<aside ref={ref} {...props}>{children}</aside>)),
+        span: React.forwardRef(({ children, initial, animate, exit, transition, whileHover, whileTap, variants, custom, layoutId, ...props }, ref) => (<span ref={ref} {...props}>{children}</span>)),
+    },
+    AnimatePresence: ({ children }) => <>{children}</>,
+}));
+vi.mock('../context/ThemeContext', () => ({
+    useTheme: () => ({ designTheme: 'marble' }),
+}));
+vi.mock('@phosphor-icons/react', async (importOriginal) => {
+    const actual = await importOriginal();
+    const icon = (props) => <span {...props}/>;
+    return {
+        ...actual,
+        ChartBar: icon,
+        GearSix: icon,
+        Users: icon,
+        Megaphone: icon,
+        ChartLine: icon,
+        MapPin: icon,
+        Translate: icon,
+        PresentationChart: icon,
+        Gauge: icon,
+        Buildings: icon,
+        ClockCounterClockwise: icon,
+        Database: icon,
+        Car: icon,
+        Wheelchair: icon,
+        Wrench: icon,
+        CurrencyDollar: icon,
+        UserPlus: icon,
+        Lightning: icon,
+        PuzzlePiece: icon,
+        GraphicsCard: icon,
+        ShieldCheck: icon,
+        LockKey: icon,
+        MapTrifold: icon,
+        Clock: icon,
+        WebhooksLogo: icon,
+        ArrowsClockwise: icon,
+        List: icon,
+        X: icon,
+        ArrowSquareOut: icon,
+    };
+});
+import { AdminPage } from './Admin';
+describe('Admin GraphQL navigation', () => {
+    it('renders GraphQL playground link in admin nav', () => {
+        render(<MemoryRouter initialEntries={['/admin']}>
+        <AdminPage />
+      </MemoryRouter>);
+        expect(screen.getByText(/GraphQL/)).toBeInTheDocument();
+    });
+    it('renders Plugins link in admin nav', () => {
+        render(<MemoryRouter initialEntries={['/admin']}>
+        <AdminPage />
+      </MemoryRouter>);
+        expect(screen.getAllByText('Plugins').length).toBeGreaterThan(0);
+    });
+    it('GraphQL link points to playground endpoint', () => {
+        render(<MemoryRouter initialEntries={['/admin']}>
+        <AdminPage />
+      </MemoryRouter>);
+        const link = screen.getByText(/GraphQL/).closest('a');
+        expect(link).toBeTruthy();
+        expect(link?.getAttribute('href')).toBe('/api/v1/graphql/playground');
+    });
+});

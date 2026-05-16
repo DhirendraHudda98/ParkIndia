@@ -1,0 +1,189 @@
+name: Release Container
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Top-level permissions are minimal (read-only). Each job declares the
+# additional scopes it actually needs.
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: ghcr.io
+
+jobs:
+  publish:
+    name: Build, scan, and publish image
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    permissions:
+      contents: read         # checkout source
+      packages: write        # push built image to GHCR
+      id-token: write        # cosign keyless signing (Sigstore OIDC) + attest-build-provenance
+      attestations: write    # actions/attest-build-provenance writes against the image digest
+      security-events: write # Trivy scan upload to GitHub Security tab
+
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build scan image
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        with:
+          context: .
+          load: true
+          platforms: linux/amd64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:scan
+          cache-from: type=gha,scope=release-docker
+          cache-to: type=gha,scope=release-docker,mode=max
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        continue-on-error: true
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:scan
+          format: table
+          severity: CRITICAL
+          exit-code: '0'
+
+      - name: Build and push
+        id: push
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=release-docker
+          cache-to: type=gha,scope=release-docker,mode=max
+          provenance: mode=max
+          sbom: true
+
+      - name: Attest image provenance
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+      # T-1789: keyless Sigstore signature on every pushed digest.
+      # Uses the ambient GitHub OIDC token — no long-lived keys to rotate.
+      - name: Install cosign
+        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
+        with:
+          cosign-release: 'v3.0.6'
+
+      - name: Sign container image (keyless OIDC)
+        env:
+          IMAGE_DIGEST: ${{ steps.push.outputs.digest }}
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        run: |
+          cosign sign --yes "${IMAGE_REF}@${IMAGE_DIGEST}"
+
+      # SOTA-2026 supply-chain hardening: generate an SBOM with Syft (Apache-2.0,
+      # github.com/anchore/syft) and attach it as an SPDX attestation via cosign.
+      # docker/build-push-action already publishes the BuildKit-native SBOM; this
+      # step is a defense-in-depth, second-source SBOM signed against the digest.
+      - name: Install syft
+        env:
+          SYFT_VERSION: 1.42.3
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/syft.tar.gz \
+            "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_linux_amd64.tar.gz"
+          tar -xzf /tmp/syft.tar.gz -C /tmp syft
+          sudo mv /tmp/syft /usr/local/bin/syft
+          syft version
+
+      - name: Generate SBOM (SPDX-JSON) from pushed digest
+        env:
+          IMAGE_DIGEST: ${{ steps.push.outputs.digest }}
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        run: |
+          set -euo pipefail
+          syft scan "registry:${IMAGE_REF}@${IMAGE_DIGEST}" \
+            -o spdx-json=sbom.spdx.json
+          test -s sbom.spdx.json
+
+      - name: Attach SBOM as cosign attestation (keyless OIDC)
+        env:
+          IMAGE_DIGEST: ${{ steps.push.outputs.digest }}
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        run: |
+          set -euo pipefail
+          cosign attest --yes --type spdxjson \
+            --predicate sbom.spdx.json \
+            "${IMAGE_REF}@${IMAGE_DIGEST}"
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: sbom-spdx-json
+          path: sbom.spdx.json
+          retention-days: 30
+
+  deploy-demo:
+    name: Deploy demo
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: {}
+    # Bind Render deploy secrets to a dedicated environment so they can be
+    # gated by environment-level reviewers/branch rules rather than living as
+    # plain repo-level secrets. Falls back to repo secrets if the environment
+    # isn't configured (Render-deploy step skips when env vars are empty).
+    environment: demo
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+
+    steps:
+      - name: Skip demo deploy when Render secrets are missing
+        if: env.RENDER_API_KEY == '' || env.RENDER_SERVICE_ID == ''
+        run: echo "Render demo deploy skipped because required secrets are not configured."
+
+      - name: Trigger Render deploy
+        if: env.RENDER_API_KEY != '' && env.RENDER_SERVICE_ID != ''
+        run: |
+          curl -fsS -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache":"do_not_clear"}'

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+        <testsuite name="Simulation">
+            <directory>tests/Simulation</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <ini name="memory_limit" value="512M"/>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:dGVzdGtleVRlc3RrZXlUZXN0a2V5VGVzdGtleVRlc3Q="/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="METRICS_TOKEN" value="test-metrics-token"/>
+        <!-- Enable all modules for testing (some default to false in production) -->
+        <env name="MODULE_STRIPE" value="true"/>
+        <env name="MODULE_OAUTH" value="true"/>
+        <env name="MODULE_WEB_PUSH" value="true"/>
+        <env name="MODULE_WEBHOOKS" value="true"/>
+        <env name="MODULE_PUSH_NOTIFICATIONS" value="true"/>
+        <env name="MODULE_BROADCASTING" value="true"/>
+        <env name="MODULE_REALTIME" value="true"/>
+        <env name="MODULE_MULTI_TENANT" value="true"/>
+        <env name="MODULE_DYNAMIC_PRICING" value="true"/>
+        <env name="MODULE_HISTORY" value="true"/>
+        <env name="MODULE_GEOFENCE" value="true"/>
+        <env name="MODULE_WAITLIST_EXT" value="true"/>
+        <env name="MODULE_PARKING_PASS" value="true"/>
+        <env name="MODULE_API_DOCS" value="true"/>
+        <!-- v4.1 features -->
+        <env name="MODULE_SHARING" value="true"/>
+        <env name="MODULE_SCHEDULED_REPORTS" value="true"/>
+        <env name="MODULE_API_VERSIONING" value="true"/>
+        <!-- v4.2 features -->
+        <env name="MODULE_SSO" value="true"/>
+        <env name="MODULE_WEBHOOKS_V2" value="true"/>
+        <env name="MODULE_ENHANCED_PWA" value="true"/>
+        <!-- v4.4 features -->
+        <env name="MODULE_NOTIFICATION_CENTER" value="true"/>
+    </php>
+</phpunit>

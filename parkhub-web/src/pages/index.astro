@@ -1,0 +1,81 @@
+---
+import '../styles/global.css';
+import { App } from '../App.jsx';
+
+const isProd = import.meta.env.PROD;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0d9488" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#042f2e" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="ParkHub — Smart Parking Management. Book, manage and optimize parking with real-time occupancy, team scheduling, and GDPR-compliant analytics." />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ParkHub" />
+    <meta property="og:title" content="ParkHub — Smart Parking Management" />
+    <meta property="og:description" content="Book, manage and optimize parking with real-time occupancy, team scheduling, and GDPR-compliant analytics." />
+    <meta property="og:image" content="/og-image.svg" />
+    <meta property="og:locale" content="en_US" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ParkHub — Smart Parking Management" />
+    <meta name="twitter:description" content="Book, manage and optimize parking with real-time occupancy, team scheduling, and GDPR-compliant analytics." />
+    <meta name="twitter:image" content="/og-image.svg" />
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "ParkHub",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web, Docker, Linux, Windows",
+        "description": "Smart parking management with real-time occupancy, team scheduling, and GDPR-compliant analytics.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "featureList": ["Real-time occupancy", "Team booking", "Multi-language", "GDPR compliance", "PWA offline support"]
+      }
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ParkHub" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <title>ParkHub</title>
+    <script is:inline>
+      // Prevent FOUC: apply theme before React hydrates
+      (function() {
+        var t = localStorage.getItem('parkhub_theme') || 'system';
+        var d = localStorage.getItem('parkhub_design_theme') || 'marble';
+        var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-design-theme', d);
+      })();
+    </script>
+  </head>
+  <body class="min-h-dvh">
+    <App client:only="react" />
+    <script is:inline define:vars={{ isProd }}>
+      // Only keep SW active in production; in dev it can serve stale cached chunks.
+      if ('serviceWorker' in navigator) {
+        if (isProd) {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        } else {
+          navigator.serviceWorker.getRegistrations().then((regs) => {
+            regs.forEach((reg) => reg.unregister());
+          });
+
+          if ('caches' in window) {
+            caches.keys().then((keys) => {
+              keys.forEach((key) => caches.delete(key));
+            });
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

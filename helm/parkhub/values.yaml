@@ -1,0 +1,270 @@
+# ParkHub PHP Helm Chart — default values
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/nash87/parkhub-php
+  pullPolicy: IfNotPresent
+  tag: ""  # defaults to appVersion
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 33  # www-data
+  fsGroup: 33
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+# -- Pod Security Standards "restricted" hardening (T-1746).
+# When enabled, the container runs with a read-only root filesystem and
+# the paths Laravel/Apache must write to are backed by tmpfs emptyDir
+# volumes. Flip `enabled` to false for dev images that need a writable
+# root (e.g. `php artisan tinker` poking around in vendor/).
+security:
+  readOnlyRootFilesystem:
+    enabled: true
+    # Size cap per emptyDir — prevents a runaway log/cache from filling
+    # the node's ephemeral storage. 128Mi is comfortable for Laravel
+    # cache + compiled views + Apache run/lock metadata.
+    sizeLimit: 128Mi
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: parkhub.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: parkhub-tls
+  #    hosts:
+  #      - parkhub.local
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 2Gi
+  mountPath: /var/www/html/storage
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# -- PodDisruptionBudget (T-1790)
+# minAvailable: 1 blocks all-at-once evictions during node drains while still
+# permitting rolling updates (which respect maxUnavailable on the Deployment).
+pdb:
+  enabled: true
+  minAvailable: 1
+
+# -- topologySpreadConstraints (T-1791)
+# Spread replicas across nodes so a single-node outage doesn't take the whole
+# Deployment down. whenUnsatisfiable: ScheduleAnyway keeps single-node/dev
+# clusters schedulable (pods still land, just all on one node).
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: parkhub-php
+
+# -- Laravel application configuration
+config:
+  port: 80
+  appKey: ""  # required — generate with: php artisan key:generate --show
+  appEnv: production
+  appDebug: false
+  appUrl: "http://parkhub.local"
+  logLevel: warning
+  demoMode: false
+
+  # Admin
+  adminEmail: ""
+  adminPassword: ""  # auto-generated if empty
+
+  # Database
+  dbConnection: mysql  # mysql, pgsql, sqlite
+  dbHost: ""
+  dbPort: 3306
+  dbDatabase: parkhub
+  dbUsername: parkhub
+  dbPassword: ""
+
+  # Cache / Queue / Session
+  cacheDriver: redis
+  queueConnection: redis
+  sessionDriver: redis
+
+  # Redis
+  redisHost: ""
+  redisPort: 6379
+  redisPassword: ""
+
+  # SMTP
+  smtp:
+    host: ""
+    port: 587
+    user: ""
+    password: "CHANGEME"  # override at deploy time
+    from: "noreply@parkhub.local"
+
+  # Stripe
+  stripe:
+    secretKey: ""
+    webhookSecret: ""
+
+  # OAuth
+  oauth:
+    google:
+      clientId: ""
+      clientSecret: ""
+    github:
+      clientId: ""
+      clientSecret: ""
+
+# -- Module feature flags (all enabled by default)
+modules:
+  bookings: true
+  vehicles: true
+  absences: true
+  branding: true
+  import: true
+  qr: true
+  pwa: true
+  payments: true
+  webhooks: true
+  notifications: true
+  announcements: true
+  recurring: true
+  guest: true
+  calendar: true
+  team: true
+  settings: true
+  jobs: true
+  swap: true
+  waitlist: true
+  zones: true
+  credits: true
+  email: true
+  export: true
+  favorites: true
+  push: true
+  recommendations: true
+  translations: true
+  social: true
+  themes: true
+  invoices: true
+  dynamicPricing: true
+  operatingHours: true
+  oauth: true
+  map: true
+  stripe: true
+  tenants: true
+  rateLimit: true
+  accessible: true
+  maintenance: true
+  costCenter: true
+  fleet: true
+  dataManagement: true
+  auditLogUi: true
+  history: true
+  geofence: true
+  visitors: true
+  evCharging: true
+  waitlistExt: true
+  parkingPass: true
+  apiDocs: true
+  absenceApproval: true
+  calendarDrag: true
+  widgets: true
+
+# -- MySQL dependency (optional in-cluster database)
+mysql:
+  enabled: false
+  auth:
+    database: parkhub
+    username: parkhub
+    password: "CHANGEME"  # override at deploy time
+    rootPassword: "CHANGEME"  # override at deploy time
+
+# -- Redis dependency (optional in-cluster cache)
+redis:
+  enabled: false
+  auth:
+    password: "CHANGEME"  # override at deploy time
+
+# -- Observability: ServiceMonitor + PrometheusRule (prometheus-operator)
+# Both flags default to false so the chart installs cleanly on clusters
+# that do not have monitoring.coreos.com/v1 CRDs. Operators flip them
+# on once prometheus-operator is installed. ParkHub PHP exposes its
+# Prometheus text endpoint at /api/metrics (MetricsController), and
+# requires a bearer token matching METRICS_TOKEN — reference a Secret
+# via `serviceMonitor.bearerTokenSecret` when that token is set.
+monitoring:
+  serviceMonitor:
+    enabled: false
+    # interval: 30s
+    # scrapeTimeout: 10s
+    # additionalLabels: {}  # e.g. release: kube-prometheus-stack
+    # bearerTokenSecret:
+    #   name: parkhub-metrics
+    #   key: METRICS_TOKEN
+  prometheusRule:
+    enabled: false
+    # additionalLabels: {}
+    # alertLabels: {}  # e.g. team: platform
+
+# -- Grafana dashboards (opt-in)
+# When enabled, the chart ships a ConfigMap labelled `grafana_dashboard: "1"`
+# that is auto-discovered by the Grafana Helm chart's sidecar or the
+# grafana-operator. Keep disabled on clusters without Grafana so the chart
+# still installs cleanly.
+grafana:
+  dashboardsEnabled: false   # opt-in; requires grafana-operator or grafana helm chart in the cluster
+
+# -- Extra environment variables
+extraEnv: []
+#  - name: CUSTOM_VAR
+#    value: "custom-value"

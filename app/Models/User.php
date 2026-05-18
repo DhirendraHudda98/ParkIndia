@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -51,6 +52,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read Collection<int, Favorite> $favorites
  * @property-read Collection<int, RecurringBooking> $recurringBookings
  * @property-read Collection<int, CreditTransaction> $creditTransactions
+ * @property-read Collection<int, Role> $roles
  * @property-read ?Tenant $tenant
  */
 class User extends Authenticatable
@@ -127,6 +129,103 @@ class User extends Authenticatable
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Role::class,
+            'user_role',
+            'user_id',
+            'role_id'
+        )->withTimestamps();
+    }
+
+    /**
+     * Check if user has a specific permission via their roles.
+     */
+    public function hasPermission(string $permissionName): bool
+    {
+        return $this->roles()
+            ->whereHas('permissions', fn ($q) => $q->where('name', $permissionName))
+            ->exists();
+    }
+
+    /**
+     * Check if user has any of the given permissions.
+     */
+    public function hasAnyPermission(array $permissionNames): bool
+    {
+        return $this->roles()
+            ->whereHas('permissions', fn ($q) => $q->whereIn('name', $permissionNames))
+            ->exists();
+    }
+
+    /**
+     * Check if user has all given permissions.
+     */
+    public function hasAllPermissions(array $permissionNames): bool
+    {
+        $userPermissions = $this->roles()
+            ->with('permissions')
+            ->get()
+            ->flatMap(fn (Role $role) => $role->permissions->pluck('name'))
+            ->unique();
+
+        return count(array_intersect($permissionNames, $userPermissions->toArray())) === count($permissionNames);
+    }
+
+    /**
+     * Get all permissions for the user.
+     */
+    public function getPermissions(): array
+    {
+        return $this->roles()
+            ->with('permissions')
+            ->get()
+            ->flatMap(fn (Role $role) => $role->permissions->pluck('name'))
+            ->unique()
+            ->toArray();
+    }
+
+    /**
+     * Check if user has a specific role.
+     */
+    public function hasRole(string $roleName): bool
+    {
+        return $this->roles()
+            ->where('name', $roleName)
+            ->exists();
+    }
+
+    /**
+     * Check if user has any of the given roles.
+     */
+    public function hasAnyRole(array $roleNames): bool
+    {
+        return $this->roles()
+            ->whereIn('name', $roleNames)
+            ->exists();
+    }
+
+    /**
+     * Assign a role to the user.
+     */
+    public function assignRole(string $roleName): void
+    {
+        $role = Role::where('name', $roleName)->firstOrFail();
+        $this->roles()->syncWithoutDetaching($role->id);
+    }
+
+    /**
+     * Remove a role from the user.
+     */
+    public function removeRole(string $roleName): void
+    {
+        $role = Role::where('name', $roleName)->first();
+        if ($role) {
+            $this->roles()->detach($role->id);
+        }
     }
 
     public function isAdmin(): bool

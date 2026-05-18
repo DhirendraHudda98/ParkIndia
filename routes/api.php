@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\WaitlistController;
 use App\Http\Controllers\Api\ZoneController;
 use App\Http\Controllers\Api\ParkingZoneAdminController;
+use App\Http\Controllers\Api\RoleAdminController;
 use App\Http\Controllers\Api\EnhancedBookingCheckInController;
 use App\Http\Controllers\Api\BookingCheckInController;
 use App\Http\Controllers\Api\PredictionController;
@@ -194,6 +195,19 @@ Route::middleware([StartSession::class, 'auth:sanctum', 'session.absolute'])->gr
         Route::post('/parking-zones/{id}/detach-lots', [ParkingZoneAdminController::class, 'detachLots']);
         Route::get('/parking-zones/{id}/available-lots', [ParkingZoneAdminController::class, 'getAvailableLots']);
         Route::get('/parking-zones/{id}/stats', [ParkingZoneAdminController::class, 'getStats']);
+
+        // Roles & Permissions (RBAC management)
+        Route::get('/roles', [RoleAdminController::class, 'index']);
+        Route::post('/roles', [RoleAdminController::class, 'store']);
+        Route::get('/roles/{id}', [RoleAdminController::class, 'show']);
+        Route::patch('/roles/{id}', [RoleAdminController::class, 'update']);
+        Route::delete('/roles/{id}', [RoleAdminController::class, 'destroy']);
+        Route::post('/roles/{id}/assign-permissions', [RoleAdminController::class, 'assignPermissions']);
+        Route::post('/roles/{id}/assign-users', [RoleAdminController::class, 'assignUsers']);
+        Route::post('/roles/{id}/remove-users', [RoleAdminController::class, 'removeUsers']);
+        Route::get('/roles/{id}/users', [RoleAdminController::class, 'getRoleUsers']);
+        Route::get('/permissions', [RoleAdminController::class, 'getPermissions']);
+        Route::get('/roles/default/list', [RoleAdminController::class, 'getDefaultRoles']);
     });
 
     // User

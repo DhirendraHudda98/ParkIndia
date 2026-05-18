@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, PencilSimple, Trash, SpinnerGap, Check, X,
   MagnifyingGlass, CurrencyInr, TrendUp, Clock,
+  SquaresFour, Wheelchair, Lightning, Star,
 } from '@phosphor-icons/react';
 import { api } from '../api/client';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { useTheme } from '../context/ThemeContext';
+import { SlotManagementDrawer } from './SlotManagementDrawer';
 
 const emptyForm = {
   name: '',
@@ -26,6 +28,7 @@ export function AdminLotsPage() {
   const { designTheme } = useTheme();
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -33,6 +36,7 @@ export function AdminLotsPage() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [confirmState, setConfirmState] = useState({open: false, action: () => {}});
+  const [selectedLotForSlots, setSelectedLotForSlots] = useState(null);
   const [dynamicPricing, setDynamicPricing] = useState({
     enabled: false, base_price: 20, surge_multiplier: 1.5,
     discount_multiplier: 0.8, surge_threshold: 80, discount_threshold: 20,
@@ -61,9 +65,17 @@ export function AdminLotsPage() {
   useEffect(() => { load(); }, []);
 
   async function load() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await api.getLots();
-      if (res.success && res.data) setLots(res.data);
+      if (res.success && res.data) {
+        setLots(res.data);
+      } else {
+        setError(res.error?.message || t('admin.errorLots', 'Failed to load parking lots.'));
+      }
+    } catch (err) {
+      setError(err?.message || t('admin.errorLots', 'Failed to load parking lots.'));
     } finally {
       setLoading(false);
     }
@@ -202,6 +214,30 @@ export function AdminLotsPage() {
     return (
       <div className="flex items-center justify-center h-64" role="status" aria-label={t('common.loading')}>
         <SpinnerGap weight="bold" className={`w-8 h-8 animate-spin ${isIndia ? 'text-[#FF9933]' : 'text-primary-600'}`} aria-hidden="true" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`rounded-[2rem] border p-8 text-center transition-all ${isVoid ? 'bg-slate-900 border-slate-800' : isIndia ? 'bg-white border-[#FF9933]/15 shadow-sm shadow-[#FF9933]/5' : 'bg-white dark:bg-surface-900 border-surface-200 dark:border-surface-800'}`}>
+        <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4 ${isIndia ? 'bg-[#FF9933]/10 text-[#FF9933]' : 'bg-red-50 dark:bg-red-950/20 text-red-500'}`}>
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 className={`text-lg font-black mb-2 ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>
+          {isIndia ? 'Parking Lot Hub Offline' : t('admin.errorTitle', 'Error Occurred')}
+        </h3>
+        <p className={`text-sm max-w-md mx-auto mb-6 ${isIndia ? 'text-[#000080]/60' : 'text-surface-500 dark:text-surface-400'}`}>
+          {error}
+        </p>
+        <button
+          onClick={load}
+          className={`px-5 py-2.5 rounded-xl font-bold transition-all ${isIndia ? 'bg-[#FF9933] hover:bg-[#E68A00] text-white' : 'bg-primary-600 hover:bg-primary-700 text-white'}`}
+        >
+          {t('common.retry', 'Retry')}
+        </button>
       </div>
     );
   }
@@ -447,6 +483,13 @@ export function AdminLotsPage() {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => setSelectedLotForSlots(lot)}
+                        title={t('admin.slotsTitle')}
+                        className={`p-2 rounded-lg transition-colors ${isIndia ? 'text-[#000080]/40 hover:text-[#FF9933]' : 'text-surface-400 hover:text-primary-600'}`}
+                      >
+                        <SquaresFour weight="bold" className="w-4 h-4" />
+                      </button>
                       <button onClick={() => openEdit(lot)} className={`p-2 rounded-lg transition-colors ${isIndia ? 'text-[#000080]/40 hover:text-[#FF9933]' : 'text-surface-400 hover:text-primary-600'}`}>
                         <PencilSimple weight="bold" className="w-4 h-4" />
                       </button>
@@ -463,6 +506,18 @@ export function AdminLotsPage() {
       </div>
 
       <ConfirmDialog open={confirmState.open} title={t('common.delete')} message={t('admin.lotDeleteConfirm')} variant="danger" onConfirm={confirmState.action} onCancel={() => setConfirmState({open: false, action: () => {}})} />
+
+      <AnimatePresence>
+        {selectedLotForSlots && (
+          <SlotManagementDrawer
+            lot={selectedLotForSlots}
+            onClose={() => {
+              setSelectedLotForSlots(null);
+              load();
+            }}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

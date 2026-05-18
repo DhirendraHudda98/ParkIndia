@@ -15,7 +15,7 @@ class StripeWebhookServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const string SECRET = 'whsec_test_abc123';
+    private const SECRET = 'whsec_test_abc123';
 
     private function buildSignatureHeader(string $payload, int $timestamp, string $secret = self::SECRET): string
     {

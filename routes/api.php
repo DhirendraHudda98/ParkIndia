@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\WaitlistController;
 use App\Http\Controllers\Api\ZoneController;
+use App\Http\Controllers\Api\ParkingZoneAdminController;
 use App\Http\Controllers\Api\EnhancedBookingCheckInController;
 use App\Http\Controllers\Api\BookingCheckInController;
 use App\Http\Controllers\Api\PredictionController;
@@ -182,6 +183,17 @@ Route::middleware([StartSession::class, 'auth:sanctum', 'session.absolute'])->gr
         // Lots & slots
         Route::delete('/lots/{id}', [AdminController::class, 'deleteLot']);
         Route::put('/slots/{id}', [AdminController::class, 'updateSlot']);
+
+        // Parking Zones (admin management)
+        Route::get('/parking-zones', [ParkingZoneAdminController::class, 'index']);
+        Route::post('/parking-zones', [ParkingZoneAdminController::class, 'store']);
+        Route::get('/parking-zones/{id}', [ParkingZoneAdminController::class, 'show']);
+        Route::patch('/parking-zones/{id}', [ParkingZoneAdminController::class, 'update']);
+        Route::delete('/parking-zones/{id}', [ParkingZoneAdminController::class, 'destroy']);
+        Route::post('/parking-zones/{id}/attach-lots', [ParkingZoneAdminController::class, 'attachLots']);
+        Route::post('/parking-zones/{id}/detach-lots', [ParkingZoneAdminController::class, 'detachLots']);
+        Route::get('/parking-zones/{id}/available-lots', [ParkingZoneAdminController::class, 'getAvailableLots']);
+        Route::get('/parking-zones/{id}/stats', [ParkingZoneAdminController::class, 'getStats']);
     });
 
     // User

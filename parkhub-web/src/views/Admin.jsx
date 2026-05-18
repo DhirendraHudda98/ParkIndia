@@ -14,38 +14,37 @@ function AdminNav() {
   const { designTheme } = useTheme();
   const isIndia = designTheme === 'india';
 
-  const tabs = [
-    { name: t('admin.overview'), path: '/admin', icon: ChartBar },
-    { name: t('admin.settings'), path: '/admin/settings', icon: GearSix },
-    { name: t('admin.users'), path: '/admin/users', icon: Users },
-    { name: t('admin.lots'), path: '/admin/lots', icon: MapPin },
-    { name: t('admin.announcements'), path: '/admin/announcements', icon: Megaphone },
-    { name: t('admin.reports'), path: '/admin/reports', icon: ChartLine },
-    { name: t('admin.translations'), path: '/admin/translations', icon: Translate },
-    { name: 'Analytics', path: '/admin/analytics', icon: PresentationChart },
-    { name: t('admin.rateLimits', 'Rate Limits'), path: '/admin/rate-limits', icon: Gauge },
-    { name: t('admin.tenants', 'Tenants'), path: '/admin/tenants', icon: Buildings },
-    { name: t('admin.auditLog', 'Audit Log'), path: '/admin/audit-log', icon: ClockCounterClockwise },
-    { name: t('admin.dataManagement', 'Data'), path: '/admin/data', icon: Database },
-    { name: t('admin.fleet', 'Fleet'), path: '/admin/fleet', icon: Car },
-    { name: t('admin.accessible', 'Accessible'), path: '/admin/accessible', icon: Wheelchair },
-    { name: t('admin.maintenance', 'Maintenance'), path: '/admin/maintenance', icon: Wrench },
-    { name: t('admin.billing', 'Billing'), path: '/admin/billing', icon: CurrencyDollar },
-    { name: t('admin.visitors', 'Visitors'), path: '/admin/visitors', icon: UserPlus },
-    { name: t('admin.chargers', 'EV Chargers'), path: '/admin/chargers', icon: Lightning },
-    { name: t('admin.modules.title', 'Modules'), path: '/admin/modules', icon: PuzzlePiece },
-    { name: t('admin.plugins', 'Plugins'), path: '/admin/plugins', icon: PuzzlePiece },
-    { name: t('compliance.title', 'Compliance'), path: '/admin/compliance', icon: ShieldCheck },
-    { name: t('rbac.title', 'Roles'), path: '/admin/roles', icon: LockKey },
-    { name: t('parkingZones.title', 'Zones'), path: '/admin/zones', icon: MapTrifold },
-    { name: t('nav.updates', 'Updates'), path: '/admin/updates', icon: ArrowsClockwise },
-    { name: 'GraphQL', path: '/api/v1/graphql/playground', icon: GraphicsCard },
-  ];
-
   const sections = [
-    { title: 'Core', items: tabs.slice(0, 7) },
-    { title: 'Operations', items: tabs.slice(7, 18) },
-    { title: 'Governance', items: tabs.slice(18) },
+    {
+      title: 'Core',
+      items: [
+        { name: t('admin.overview'), path: '/admin', icon: ChartBar },
+        { name: t('admin.users'), path: '/admin/users', icon: Users },
+        { name: t('admin.lots'), path: '/admin/lots', icon: MapPin },
+        { name: t('parkingZones.title', 'Zones'), path: '/admin/zones', icon: MapTrifold },
+      ]
+    },
+    {
+      title: 'Operations',
+      items: [
+        { name: t('admin.maintenance', 'Maintenance'), path: '/admin/maintenance', icon: Wrench },
+        { name: t('admin.rateLimits', 'Rate Limits'), path: '/admin/rate-limits', icon: Gauge },
+        { name: t('admin.billing', 'Billing'), path: '/admin/billing', icon: CurrencyDollar },
+      ]
+    },
+    {
+      title: 'Intelligence',
+      items: [
+        { name: t('admin.reports'), path: '/admin/reports', icon: ChartLine },
+        { name: 'Analytics', path: '/admin/analytics', icon: PresentationChart },
+      ]
+    },
+    {
+      title: 'Governance',
+      items: [
+        { name: t('rbac.title', 'Roles'), path: '/admin/roles', icon: LockKey },
+      ]
+    }
   ];
 
   function isActive(path) {
@@ -133,7 +132,7 @@ export function AdminPage() {
             <div className="mt-5 flex flex-wrap gap-3">
               <AdminHeroStat label={t('admin.users')} value="24" isVoid={isVoid} isIndia={isIndia} />
               <AdminHeroStat label={t('admin.lots')} value="6" isVoid={isVoid} isIndia={isIndia} />
-              <AdminHeroStat label={t('admin.announcements')} value="3 live" isVoid={isVoid} isIndia={isIndia} />
+              <AdminHeroStat label={t('parkingZones.title', 'Zones')} value="12" isVoid={isVoid} isIndia={isIndia} />
               <AdminHeroStat label={t('admin.rateLimits', 'Rate Limits')} value="stable" isVoid={isVoid} isIndia={isIndia} />
             </div>
           </div>
@@ -145,9 +144,9 @@ export function AdminPage() {
             <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${isVoid ? 'text-white/45' : isIndia ? 'text-[#000080]/40' : 'text-surface-500 dark:text-white/45'}`}>Operational focus</p>
             <div className="mt-4 space-y-3">
               {[
-                { label: t('admin.settings'), meta: 'Policy, booking rules, waitlist, credits' },
-                { label: t('admin.users'), meta: 'Quota, role, lifecycle and bulk actions' },
-                { label: t('admin.announcements'), meta: 'Live comms surfaced into the product shell' },
+                { label: t('admin.lots'), meta: 'Interactive slot layouts, utilization meters and creation' },
+                { label: t('admin.users'), meta: 'Quota, role permissions, billing lifecycle and user states' },
+                { label: 'Analytics', meta: 'Real-time booking demands, reservation metrics and lot stats' },
               ].map(item => (
                 <div key={item.label} className={`rounded-2xl border px-4 py-3 transition-colors ${
                   isVoid
@@ -183,9 +182,9 @@ export function AdminPage() {
             <h2 className={`text-lg font-bold ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>Live priorities</h2>
             <div className="mt-4 space-y-3">
               {[
-                { title: 'Announcements', body: 'Keep banner, notification-center and dashboard comms aligned.' },
-                { title: 'EV + Zones', body: 'Operational visibility should match the new dashboard surfaces.' },
-                { title: 'Compliance', body: 'Roles, audit log and configuration changes stay one click away.' },
+                { title: 'Slot Capacity', body: 'Review real-time lot occupancies, peaks and dynamic assignments.' },
+                { title: 'Rates & Pricing Configuration', body: 'Configure booking credits, limits and hourly rates.' },
+                { title: 'Security & Access Control', body: 'Assign operators and define robust role permissions.' },
               ].map(item => (
                 <div key={item.title} className={`rounded-2xl px-4 py-3 transition-colors ${isIndia ? 'bg-[#000080]/5' : 'bg-surface-100 dark:bg-surface-800/80'}`}>
                   <p className={`text-sm font-semibold ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>{item.title}</p>

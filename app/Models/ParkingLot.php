@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -37,6 +38,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property-read Collection<int, ParkingSlot> $slots
  * @property-read Collection<int, Zone> $zones
+ * @property-read Collection<int, ParkingZone> $parkingZones
  * @property-read Collection<int, Booking> $bookings
  * @property-read ?Tenant $tenant
  */
@@ -86,6 +88,16 @@ class ParkingLot extends Model
     public function zones(): HasMany
     {
         return $this->hasMany(Zone::class, 'lot_id');
+    }
+
+    public function parkingZones()
+    {
+        return $this->belongsToMany(
+            ParkingZone::class,
+            'parking_zone_parking_lot',
+            'parking_lot_id',
+            'parking_zone_id'
+        )->withTimestamps();
     }
 
     public function bookings(): HasMany

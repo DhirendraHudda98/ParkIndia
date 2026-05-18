@@ -29,15 +29,25 @@ export function AdminWebhooksPage() {
   const [formDesc, setFormDesc] = useState('');
   const [deliveries, setDeliveries] = useState([]);
   const [showDeliveries, setShowDeliveries] = useState(null);
+  const [error, setError] = useState(null);
 
   const loadWebhooks = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch('/api/v1/admin/webhooks-v2').then(r => r.json());
-      if (res.success) {
-        setWebhooks(res.data || []);
+      const res = await fetch('/api/v1/admin/webhooks-v2');
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }
-    } catch {
+      const data = await res.json();
+      if (data.success) {
+        setWebhooks(data.data || []);
+      } else {
+        throw new Error(data.error?.message || 'Failed to load webhooks');
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'An unexpected error occurred');
       toast.error(t('common.error'));
     } finally {
       setLoading(false);
@@ -213,6 +223,26 @@ export function AdminWebhooksPage() {
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => <div key={i} className="h-24 skeleton rounded-[2rem]" />)}
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center p-8 min-h-[300px] text-center bg-white dark:bg-surface-800 rounded-[2.5rem] border border-amber-200 dark:border-amber-900/30 shadow-xl shadow-[#000080]/5 space-y-6">
+            <div className="w-16 h-16 rounded-full bg-amber-50 dark:bg-amber-950/20 flex items-center justify-center text-amber-500">
+              <WebhooksLogo weight="thin" size={36} />
+            </div>
+            <div className="max-w-md">
+              <h2 className={`text-xl font-black ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>
+                {isIndia ? 'API Gateway Offline' : 'Webhooks System Offline'}
+              </h2>
+              <p className={`text-sm font-medium mt-2 leading-relaxed ${isIndia ? 'text-[#000080]/60' : 'text-surface-500 dark:text-surface-400'}`}>
+                Real-time API event triggers are disabled in this environment. To enable this gateway, please set <code className="px-1.5 py-0.5 rounded bg-surface-100 dark:bg-surface-900 font-mono text-xs text-red-500">MODULE_WEBHOOKS=true</code> in your backend <code className="px-1.5 py-0.5 rounded bg-surface-100 dark:bg-surface-900 font-mono text-xs">.env</code> file.
+              </p>
+            </div>
+            <button
+              onClick={loadWebhooks}
+              className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all shadow-lg ${isIndia ? 'bg-[#000080] hover:bg-[#000060] shadow-[#000080]/20' : 'bg-primary-600 shadow-primary-500/20'}`}
+            >
+              {t('common.retry') || 'Retry Connection'}
+            </button>
           </div>
         ) : webhooks.length === 0 ? (
           <div className="text-center py-20 rounded-[3rem] border border-dashed border-surface-200">

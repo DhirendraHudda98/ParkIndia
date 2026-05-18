@@ -28,6 +28,7 @@ class ParkingSlotResource extends JsonResource
             'features' => $this->features,
             'reserved_for_department' => $this->reserved_for_department,
             'zone_id' => $this->zone_id,
+            'is_accessible' => (bool) $this->is_accessible,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'lot' => ParkingLotResource::make($this->whenLoaded('lot')),

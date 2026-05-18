@@ -14,15 +14,25 @@ export function AdminCompliancePage() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
+  const [error, setError] = useState(null);
 
   const loadReport = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch('/api/v1/admin/compliance/report').then(r => r.json());
-      if (res.success) {
-        setReport(res.data);
+      const res = await fetch('/api/v1/admin/compliance/report');
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }
-    } catch {
+      const data = await res.json();
+      if (data.success) {
+        setReport(data.data);
+      } else {
+        throw new Error(data.error?.message || 'Failed to load compliance report');
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'An unexpected error occurred');
       toast.error(t('common.error'));
     } finally {
       setLoading(false);
@@ -58,6 +68,32 @@ export function AdminCompliancePage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className={`animate-spin rounded-full h-8 w-8 border-b-2 ${isIndia ? 'border-[#FF9933]' : 'border-primary-500'}`} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 min-h-[400px] text-center bg-white dark:bg-surface-800 rounded-[2.5rem] border border-red-200 dark:border-red-900/30 shadow-xl shadow-[#000080]/5 space-y-6">
+        <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-950/20 flex items-center justify-center text-red-500">
+          <XCircle weight="bold" size={36} />
+        </div>
+        <div className="max-w-md">
+          <h2 className={`text-xl font-black ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>
+            {isIndia ? 'Governance Data Loading Failed' : 'Failed to Load Compliance Data'}
+          </h2>
+          <p className={`text-sm font-medium mt-2 leading-relaxed ${isIndia ? 'text-[#000080]/60' : 'text-surface-500 dark:text-surface-400'}`}>
+            {error.includes('403') || error.includes('404')
+              ? 'This governance module is either disabled or unauthorized in your environment. Please ensure MODULE_COMPLIANCE=true is configured in the environment settings.'
+              : error}
+          </p>
+        </div>
+        <button
+          onClick={loadReport}
+          className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all shadow-lg ${isIndia ? 'bg-[#000080] hover:bg-[#000060] shadow-[#000080]/20' : 'bg-primary-600 shadow-primary-500/20'}`}
+        >
+          {t('common.retry') || 'Retry Connection'}
+        </button>
       </div>
     );
   }

@@ -19,18 +19,28 @@ export function AdminPluginsPage() {
   const [configDialog, setConfigDialog] = useState(null);
   const [configValues, setConfigValues] = useState({});
   const [savingConfig, setSavingConfig] = useState(false);
+  const [error, setError] = useState(null);
 
   const loadPlugins = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch('/api/v1/admin/plugins').then(r => r.json());
-      if (res.success) {
-        const data = res.data;
-        setPlugins(data.plugins);
-        setTotal(data.total);
-        setEnabled(data.enabled);
+      const res = await fetch('/api/v1/admin/plugins');
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }
-    } catch {
+      const data = await res.json();
+      if (data.success) {
+        const payload = data.data;
+        setPlugins(payload.plugins || []);
+        setTotal(payload.total || 0);
+        setEnabled(payload.enabled || 0);
+      } else {
+        throw new Error(data.error?.message || 'Failed to load plugins');
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'An unexpected error occurred');
       toast.error(t('common.error'));
     } finally {
       setLoading(false);
@@ -95,6 +105,47 @@ export function AdminPluginsPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className={`animate-spin rounded-full h-12 w-12 border-b-4 ${isIndia ? 'border-[#FF9933]' : 'border-primary-500'}`} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${isIndia ? 'bg-[#FF9933]/10 text-[#FF9933]' : 'bg-primary-50 dark:bg-primary-950/30 text-primary-500'}`}>
+            <PuzzlePiece weight="bold" className="w-7 h-7" />
+          </div>
+          <div>
+            <h1 className={`text-2xl font-black ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>
+              {isIndia ? 'Integrations & Add-ons' : t('plugins.title')}
+            </h1>
+            <p className={`text-sm font-medium ${isIndia ? 'text-[#000080]/50' : 'text-surface-500 dark:text-surface-400'}`}>
+              {isIndia ? 'Configure localized third-party services and Indian payment gateways.' : t('plugins.subtitle')}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center p-8 min-h-[300px] text-center bg-white dark:bg-surface-800 rounded-[2.5rem] border border-amber-200 dark:border-amber-900/30 shadow-xl shadow-[#000080]/5 space-y-6">
+          <div className="w-16 h-16 rounded-full bg-amber-50 dark:bg-amber-950/20 flex items-center justify-center text-amber-500">
+            <PuzzlePiece weight="thin" size={36} />
+          </div>
+          <div className="max-w-md">
+            <h2 className={`text-xl font-black ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>
+              {isIndia ? 'Integrations Module Disabled' : 'Plugins System Offline'}
+            </h2>
+            <p className={`text-sm font-medium mt-2 leading-relaxed ${isIndia ? 'text-[#000080]/60' : 'text-surface-500 dark:text-surface-400'}`}>
+              The third-party integrations and plugin system is disabled in the environment. To use this functionality, please set <code className="px-1.5 py-0.5 rounded bg-surface-100 dark:bg-surface-900 font-mono text-xs text-red-500">MODULE_PLUGINS=true</code> in your backend <code className="px-1.5 py-0.5 rounded bg-surface-100 dark:bg-surface-900 font-mono text-xs">.env</code> file.
+            </p>
+          </div>
+          <button
+            onClick={loadPlugins}
+            className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all shadow-lg ${isIndia ? 'bg-[#000080] hover:bg-[#000060] shadow-[#000080]/20' : 'bg-primary-600 shadow-primary-500/20'}`}
+          >
+            {t('common.retry') || 'Retry Connection'}
+          </button>
+        </div>
       </div>
     );
   }

@@ -229,6 +229,13 @@ export const api = {
   getLot: (id) => request(`/api/v1/lots/${id}`),
   
   getLotSlots: (lotId) => request(`/api/v1/lots/${lotId}/slots`),
+  getLotZones: (lotId) => request(`/api/v1/lots/${lotId}/zones`),
+  
+  createSlot: (lotId, data) => request(`/api/v1/lots/${lotId}/slots`, { method: 'POST', body: JSON.stringify(data) }),
+  
+  updateSlot: (lotId, slotId, data) => request(`/api/v1/lots/${lotId}/slots/${slotId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  
+  deleteSlot: (lotId, slotId) => request(`/api/v1/lots/${lotId}/slots/${slotId}`, { method: 'DELETE' }),
   
   createLot: (data) => request('/api/v1/lots', { method: 'POST', body: JSON.stringify(data) }),
   

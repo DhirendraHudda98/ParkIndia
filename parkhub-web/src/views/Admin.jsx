@@ -112,9 +112,12 @@ export function AdminPage() {
     heroBg = 'border-[#FF9933]/20 bg-gradient-to-br from-white via-[#FF9933]/5 to-white text-[#000080] shadow-sm';
   }
 
+  const isDashboard = location.pathname === '/admin';
+
   return (
     <div className="space-y-6">
-      <section className={`overflow-hidden rounded-[28px] border px-6 py-6 transition-colors ${heroBg}`}>
+      {isDashboard && (
+        <section className={`overflow-hidden rounded-[28px] border px-6 py-6 transition-colors ${heroBg}`}>
         <div className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
           <div>
             <div className={`mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${
@@ -158,14 +161,15 @@ export function AdminPage() {
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      )}
 
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className={`grid gap-4 ${isDashboard ? 'lg:grid-cols-[1.1fr_0.9fr]' : 'grid-cols-1'}`}>
         <section className={`rounded-[24px] border p-5 transition-colors ${isIndia ? 'bg-white border-[#FF9933]/10 shadow-sm' : 'border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900'}`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className={`text-lg font-bold ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>Admin navigation</h2>
-              <p className={`mt-1 text-sm ${isIndia ? 'text-[#000080]/60' : 'text-surface-500 dark:text-surface-400'}`}>Core, operations and governance routes grouped by functional area.</p>
+              {isDashboard && <p className={`mt-1 text-sm ${isIndia ? 'text-[#000080]/60' : 'text-surface-500 dark:text-surface-400'}`}>Core, operations and governance routes grouped by functional area.</p>}
             </div>
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isIndia ? 'bg-[#FF9933]/10 text-[#FF9933]' : 'bg-primary-500/10 text-primary-700 dark:text-primary-300'}`}>
               {location.pathname === '/admin' ? 'Overview live' : 'Section active'}
@@ -174,21 +178,23 @@ export function AdminPage() {
           <AdminNav />
         </section>
 
-        <section className={`rounded-[24px] border p-5 transition-colors ${isIndia ? 'bg-white border-[#FF9933]/10 shadow-sm' : 'border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900'}`}>
-          <h2 className={`text-lg font-bold ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>Live priorities</h2>
-          <div className="mt-4 space-y-3">
-            {[
-              { title: 'Announcements', body: 'Keep banner, notification-center and dashboard comms aligned.' },
-              { title: 'EV + Zones', body: 'Operational visibility should match the new dashboard surfaces.' },
-              { title: 'Compliance', body: 'Roles, audit log and configuration changes stay one click away.' },
-            ].map(item => (
-              <div key={item.title} className={`rounded-2xl px-4 py-3 transition-colors ${isIndia ? 'bg-[#000080]/5' : 'bg-surface-100 dark:bg-surface-800/80'}`}>
-                <p className={`text-sm font-semibold ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>{item.title}</p>
-                <p className={`mt-1 text-xs leading-5 ${isIndia ? 'text-[#000080]/60' : 'text-surface-500 dark:text-surface-400'}`}>{item.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        {isDashboard && (
+          <section className={`rounded-[24px] border p-5 transition-colors ${isIndia ? 'bg-white border-[#FF9933]/10 shadow-sm' : 'border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900'}`}>
+            <h2 className={`text-lg font-bold ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>Live priorities</h2>
+            <div className="mt-4 space-y-3">
+              {[
+                { title: 'Announcements', body: 'Keep banner, notification-center and dashboard comms aligned.' },
+                { title: 'EV + Zones', body: 'Operational visibility should match the new dashboard surfaces.' },
+                { title: 'Compliance', body: 'Roles, audit log and configuration changes stay one click away.' },
+              ].map(item => (
+                <div key={item.title} className={`rounded-2xl px-4 py-3 transition-colors ${isIndia ? 'bg-[#000080]/5' : 'bg-surface-100 dark:bg-surface-800/80'}`}>
+                  <p className={`text-sm font-semibold ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>{item.title}</p>
+                  <p className={`mt-1 text-xs leading-5 ${isIndia ? 'text-[#000080]/60' : 'text-surface-500 dark:text-surface-400'}`}>{item.body}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       <div className={`rounded-[24px] border p-5 shadow-sm transition-colors ${isIndia ? 'bg-white border-[#FF9933]/10' : 'border-surface-200 bg-white/90 dark:border-surface-800 dark:bg-surface-900/80'}`}>

@@ -364,6 +364,9 @@ export function SettingsPage() {
         >
           <div className="grid grid-cols-1 gap-2 -my-2 sm:grid-cols-2">
             {activeSections.map((s) => {
+              const isAdminLink = !!s.to && s.to.startsWith('/admin');
+              const disabled = isAdminLink && !canAccessAdmin;
+
               const content = (
                 <>
                   <s.icon weight="duotone" className={`h-5 w-5 shrink-0 ${isIndia ? 'text-[#FF9933]' : 'text-primary-500'}`} />
@@ -377,10 +380,17 @@ export function SettingsPage() {
                       </p>
                     )}
                   </div>
-                  {s.to && <ArrowRight weight="bold" className="h-3.5 w-3.5 shrink-0 text-surface-400" />}
+                  {disabled ? (
+                    <span className="ml-auto rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                      Admin only
+                    </span>
+                  ) : (
+                    s.to && <ArrowRight weight="bold" className="h-3.5 w-3.5 shrink-0 text-surface-400" />
+                  )}
                 </>
               );
-              return s.to ? (
+
+              return s.to && !disabled ? (
                 <Link
                   key={s.id}
                   to={s.to}
@@ -391,7 +401,7 @@ export function SettingsPage() {
               ) : (
                 <div
                   key={s.id}
-                  className="flex items-center gap-3 rounded-lg p-3 opacity-75"
+                  className={`flex items-center gap-3 rounded-lg p-3 ${disabled ? 'opacity-60' : 'opacity-75'}`}
                 >
                   {content}
                 </div>

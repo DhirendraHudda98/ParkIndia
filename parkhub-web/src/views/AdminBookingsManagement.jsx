@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   CalendarCheck,
-  Search,
-  Filter,
+  MagnifyingGlass as Search,
+  Funnel as Filter,
   Download,
   X,
   Eye,

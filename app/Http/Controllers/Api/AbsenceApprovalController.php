@@ -153,7 +153,7 @@ class AbsenceApprovalController extends Controller
     private function ensureAdmin(Request $request): void
     {
         $user = $request->user();
-        if (!$user instanceof User || (string) $user->role !== 'admin') {
+        if (!$user instanceof User || !in_array((string) $user->role, ['admin', 'superadmin'], true)) {
             abort(403);
         }
     }

@@ -219,6 +219,7 @@ class IndianParkingLotsSeeder extends Seeder
                 'longitude'                 => $data['longitude'],
                 'total_slots'               => $data['total_slots'],
                 'available_slots'           => $data['available_spots'],
+                'available_spots'           => $data['available_spots'],
                 'hourly_rate_inr'           => $data['hourly_rate_inr'],
                 'daily_max_inr'             => $data['daily_max_inr'],
                 'status'                    => $data['status'],

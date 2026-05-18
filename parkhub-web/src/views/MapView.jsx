@@ -6,6 +6,7 @@ import { staggerSlow, fadeUp } from '../constants/animations';
 import { CityFilter } from '../components/CityFilter';
 import { LocationSearch } from '../components/LocationSearch';
 import { useTheme } from '../context/ThemeContext';
+import 'leaflet/dist/leaflet.css';
 
 const MAPPLS_SDK_URL = 'https://apis.mappls.com/advancedmaps/v1';
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
@@ -57,7 +58,6 @@ function LeafletMapFallback({
   useEffect(() => {
     if (mapContainerRef.current && !mapRef.current) {
       import('leaflet').then(L => {
-        import('leaflet/dist/leaflet.css').catch(() => {});
         const map = L.map(mapContainerRef.current, {
           center: [19.0760, 72.8777],
           zoom: 12,
@@ -112,7 +112,7 @@ function LeafletMapFallback({
   }, [lots, onSelectLot]);
 
   return (
-    <div ref={mapContainerRef} style={{ height: '500px', width: '100%' }} className="bg-surface-100 dark:bg-surface-900" />
+    <div ref={mapContainerRef} style={{ height: '500px', width: '100%' }} className="bg-surface-100 dark:bg-surface-900 animate-fade-in" />
   );
 }
 
@@ -122,7 +122,7 @@ export function MapViewPage() {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef(new Map());
-  const USE_LEAFLET = !MAPPLS_KEY;
+  const [useLeaflet, setUseLeaflet] = useState(!MAPPLS_KEY);
 
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -160,14 +160,17 @@ export function MapViewPage() {
   }, [fetchAvailability]);
 
   useEffect(() => {
-    if (USE_LEAFLET) {
+    if (useLeaflet) {
       setLoading(false);
       return;
     }
     loadMapplsSDK()
       .then(() => setSdkReady(true))
-      .catch(err => setSdkError(err.message));
-  }, [USE_LEAFLET]);
+      .catch(err => {
+        console.warn('Mappls SDK failed to load, falling back to Leaflet map:', err.message);
+        setUseLeaflet(true);
+      });
+  }, [useLeaflet]);
 
   useEffect(() => {
     if (!sdkReady || !mapContainerRef.current || mapRef.current) return;
@@ -396,7 +399,7 @@ export function MapViewPage() {
             </div>
           </div>
 
-          {USE_LEAFLET ? (
+          {useLeaflet ? (
             <LeafletMapFallback
               lots={lots}
               selectedLotId={selectedLotId}

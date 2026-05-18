@@ -39,15 +39,11 @@ export function LocationSearch({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ── Debounced Mappls Autosuggest fetch ──────────────────────────────────
+  // ── Debounced Mappls Autosuggest fetch with OpenStreetMap Fallback ──────
   const fetchSuggestions = useCallback(async (q) => {
     if (q.length < 2) {
       setSuggestions([]);
       setOpen(false);
-      return;
-    }
-    if (!MAPPLS_KEY) {
-      setError("Mappls API key not configured.");
       return;
     }
 
@@ -55,28 +51,57 @@ export function LocationSearch({
     setError(null);
 
     try {
-      // Mappls Atlas TextSearch endpoint — returns Indian places
-      const url = `https://atlas.mappls.com/api/places/textsearch/json?query=${encodeURIComponent(q)}&region=IND`;
-      const res = await fetch(url, {
-        headers: { Authorization: `bearer ${MAPPLS_KEY}` },
-      });
+      let places = [];
 
-      if (!res.ok) throw new Error("Autosuggest API error");
-      const json = await res.json();
+      // 1. Try Mappls API first if configured
+      if (MAPPLS_KEY) {
+        try {
+          const url = `https://atlas.mappls.com/api/places/textsearch/json?query=${encodeURIComponent(q)}&region=IND`;
+          const res = await fetch(url, {
+            headers: { Authorization: `bearer ${MAPPLS_KEY}` },
+          });
 
-      const places = (json.suggestedLocations ?? []).slice(0, 6).map((p) => ({
-        placeName: p.placeName ?? p.placeAddress ?? "Unknown place",
-        placeAddress: p.placeAddress ?? "",
-        latitude: p.latitude ?? "0",
-        longitude: p.longitude ?? "0",
-        type: p.type ?? "place",
-        eLoc: p.eLoc,
-      }));
+          if (res.ok) {
+            const json = await res.json();
+            places = (json.suggestedLocations ?? []).slice(0, 6).map((p) => ({
+              placeName: p.placeName ?? p.placeAddress ?? "Unknown place",
+              placeAddress: p.placeAddress ?? "",
+              latitude: p.latitude ?? "0",
+              longitude: p.longitude ?? "0",
+              type: p.type ?? "place",
+              eLoc: p.eLoc,
+            }));
+          }
+        } catch (mapplsErr) {
+          console.warn("Mappls location search failed, trying OpenStreetMap Nominatim fallback...", mapplsErr);
+        }
+      }
+
+      // 2. Fallback to OpenStreetMap Nominatim API if Mappls key is missing, invalid, or API failed
+      if (places.length === 0) {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&countrycodes=in&limit=6`;
+        const res = await fetch(url, {
+          headers: { "Accept-Language": "en" },
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          places = json.map((p) => ({
+            placeName: p.display_name.split(",")[0] ?? "Unknown place",
+            placeAddress: p.display_name ?? "",
+            latitude: p.lat ?? "0",
+            longitude: p.lon ?? "0",
+            type: "place",
+            eLoc: String(p.place_id),
+          }));
+        }
+      }
 
       setSuggestions(places);
       setOpen(places.length > 0);
     } catch (err) {
-      setError("Could not fetch suggestions. Check your Mappls API key.");
+      console.error("Location search failed completely:", err);
+      setError("Could not search location. Please check your network.");
       setSuggestions([]);
     } finally {
       setLoading(false);

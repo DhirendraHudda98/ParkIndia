@@ -28,7 +28,7 @@ function StatCard({ icon: Icon, label, value, sub, isIndia, isVoid }) {
 }
 
 function CustomTooltip({ active, payload, label, currency = '₹', isIndia }) {
-  if (active && payload && payload.length) {
+  if (active && Array.isArray(payload) && payload.length > 0) {
     return (
       <div className={`rounded-xl border p-3 shadow-xl ${
         isIndia ? 'border-[#FF9933]/20 bg-white' : 'border-surface-200 dark:border-surface-800 bg-white dark:bg-surface-950'
@@ -64,8 +64,30 @@ export function AdminAnalyticsPage() {
     };
     fetch(`${base}/api/v1/admin/analytics/overview?days=${range}`, { headers, credentials: 'include' })
       .then(r => r.json())
-      .then(json => { if (json?.data) setData(json.data); })
-      .catch(() => {})
+      .then(json => {
+        const payload = json?.data || json;
+        if (payload) {
+          const dBookings = Array.isArray(payload.daily_bookings) ? payload.daily_bookings : [];
+          const dRevenue = Array.isArray(payload.revenue_by_day) ? payload.revenue_by_day : (Array.isArray(payload.daily_revenue) ? payload.daily_revenue : []);
+          
+          setData({
+            daily_bookings: dBookings.map(b => ({ ...b, value: b.count ?? b.value ?? 0 })),
+            daily_revenue: dRevenue.map(r => ({ ...r, value: r.revenue ?? r.value ?? 0 })),
+            top_lots: (Array.isArray(payload.top_lots) ? payload.top_lots : []).map(l => ({
+              ...l,
+              lot_id: l.lot_id ?? l.id,
+              lot_name: l.lot_name ?? l.name,
+              booking_count: l.booking_count ?? 0
+            })),
+            user_growth: Array.isArray(payload.user_growth) ? payload.user_growth : [],
+            total_bookings: payload.total_bookings ?? dBookings.reduce((sum, d) => sum + (d.count ?? d.value ?? 0), 0),
+            total_revenue: payload.total_revenue ?? dRevenue.reduce((sum, d) => sum + (d.revenue ?? d.value ?? 0), 0),
+            avg_booking_duration_minutes: payload.avg_booking_duration_minutes ?? ((payload.avg_duration_hours ?? 0) * 60),
+            active_users: payload.active_users ?? payload.total_users ?? 0
+          });
+        }
+      })
+      .catch((e) => { console.error(e); })
       .finally(() => setLoading(false));
   }, [range]);
 
@@ -135,8 +157,8 @@ export function AdminAnalyticsPage() {
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               <HeroMetric label="Range" value={range === '365' ? '1 year' : `${range} days`} meta="Explorable window" isVoid={isVoid} isIndia={isIndia} accent />
-              <HeroMetric label="Daily points" value={String(data?.daily_bookings.length ?? 0)} meta="Trend line data" isVoid={isVoid} isIndia={isIndia} />
-              <HeroMetric label="Top lots" value={String(data?.top_lots.length ?? 0)} meta="Utilization stats" isVoid={isVoid} isIndia={isIndia} />
+              <HeroMetric label="Daily points" value={String(data && Array.isArray(data.daily_bookings) ? data.daily_bookings.length : 0)} meta="Trend line data" isVoid={isVoid} isIndia={isIndia} />
+              <HeroMetric label="Top lots" value={String(data && Array.isArray(data.top_lots) ? data.top_lots.length : 0)} meta="Utilization stats" isVoid={isVoid} isIndia={isIndia} />
             </div>
           </div>
 
@@ -150,8 +172,8 @@ export function AdminAnalyticsPage() {
             </p>
             <div className="mt-4 space-y-3">
               <PanelMetric label="Fetch state" value={loading ? 'Loading' : data ? 'Live' : 'Fallback'} helper="Overview endpoint status" isVoid={isVoid} isIndia={isIndia} />
-              <PanelMetric label="Revenue points" value={String(data?.daily_revenue.length ?? 0)} helper="Trend chart coverage" isVoid={isVoid} isIndia={isIndia} />
-              <PanelMetric label="User growth" value={String(data?.user_growth.length ?? 0)} helper="Twelve-month pulse" isVoid={isVoid} isIndia={isIndia} />
+              <PanelMetric label="Revenue points" value={String(data && Array.isArray(data.daily_revenue) ? data.daily_revenue.length : 0)} helper="Trend chart coverage" isVoid={isVoid} isIndia={isIndia} />
+              <PanelMetric label="User growth" value={String(data && Array.isArray(data.user_growth) ? data.user_growth.length : 0)} helper="Twelve-month pulse" isVoid={isVoid} isIndia={isIndia} />
             </div>
           </div>
         </div>
@@ -200,7 +222,7 @@ export function AdminAnalyticsPage() {
               </h3>
               <div className="h-[240px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.daily_bookings}>
+                  <AreaChart data={Array.isArray(data.daily_bookings) ? data.daily_bookings : []}>
                     <defs>
                       <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor={isIndia ? "#FF9933" : "#000080"} stopOpacity={0.1}/>
@@ -234,7 +256,7 @@ export function AdminAnalyticsPage() {
               </h3>
               <div className="h-[240px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.daily_revenue}>
+                  <BarChart data={Array.isArray(data.daily_revenue) ? data.daily_revenue : []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                     <XAxis dataKey="date" hide />
                     <YAxis hide />
@@ -290,8 +312,8 @@ export function AdminAnalyticsPage() {
             }`}>
               <h3 className={`text-sm font-black mb-6 uppercase tracking-widest ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>Premium Lot Performance</h3>
               <div className="space-y-4">
-                {data.top_lots.length === 0 && <p className="text-sm text-surface-400">No lot data available</p>}
-                {data.top_lots.map((lot, idx) => (
+                {(!Array.isArray(data.top_lots) || data.top_lots.length === 0) && <p className="text-sm text-surface-400">No lot data available</p>}
+                {(Array.isArray(data.top_lots) ? data.top_lots : []).map((lot, idx) => (
                   <div key={lot.lot_id} className="group flex items-center gap-4">
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-black transition-colors ${
                       isIndia ? 'bg-[#000080]/5 text-[#000080]' : 'bg-surface-50 dark:bg-white/5 text-surface-900 dark:text-white'
@@ -330,7 +352,7 @@ export function AdminAnalyticsPage() {
               
               <div className="h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.user_growth}>
+                  <BarChart data={Array.isArray(data.user_growth) ? data.user_growth : []}>
                     <Bar dataKey="new_users" fill={isIndia ? "#FF9933" : "#white"} radius={[4, 4, 4, 4]} />
                     <XAxis dataKey="month" hide />
                     <Tooltip cursor={{fill: 'transparent'}} content={<CustomTooltip isIndia={isIndia} />} />

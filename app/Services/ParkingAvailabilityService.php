@@ -50,7 +50,7 @@ class ParkingAvailabilityService
             return ParkingLot::where('status', 'open')
                 ->select([
                     'id', 'name', 'address', 'city', 'state', 'pincode',
-                    'latitude', 'longitude', 'total_slots', 'available_spots',
+                    'latitude', 'longitude', 'total_slots', 'available_spots', 'available_slots',
                     'hourly_rate_inr', 'daily_max_inr', 'status',
                     'availability_last_updated',
                 ])
@@ -154,6 +154,9 @@ class ParkingAvailabilityService
     private function formatLotAvailability(ParkingLot $lot): array
     {
         $available = (int) ($lot->available_spots ?? $lot->available_slots ?? 0);
+        if ($available === 0 && ($lot->available_slots ?? 0) > 0) {
+            $available = (int) $lot->available_slots;
+        }
         $total     = (int) ($lot->total_slots ?? 0);
 
         return [

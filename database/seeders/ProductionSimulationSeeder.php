@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 /**
@@ -20,62 +21,73 @@ class ProductionSimulationSeeder extends Seeder
     // -------------------------------------------------------------------------
 
     private const LOTS = [
-        ['name' => 'P+R Hauptbahnhof',          'address' => 'Bahnhofplatz 1, 80335 München',              'slots' => 50,  'zones' => ['Ebene A', 'Ebene B', 'Ebene C']],
-        ['name' => 'Tiefgarage Marktplatz',      'address' => 'Marktplatz 5, 70173 Stuttgart',              'slots' => 80,  'zones' => ['UG1', 'UG2']],
-        ['name' => 'Parkhaus Stadtmitte',         'address' => 'Rathausstraße 12, 50667 Köln',               'slots' => 60,  'zones' => ['Erdgeschoss', '1. Obergeschoss', '2. Obergeschoss']],
-        ['name' => 'P+R Messegelände',           'address' => 'Messegelände Süd, 60528 Frankfurt am Main',  'slots' => 100, 'zones' => ['Halle Nord', 'Halle Süd']],
-        ['name' => 'Parkplatz Einkaufszentrum',  'address' => 'Shoppingcenter 3, 22335 Hamburg',            'slots' => 40,  'zones' => ['Außenparkplatz', 'Tiefgarage']],
-        ['name' => 'Tiefgarage Rathaus',         'address' => 'Rathausplatz 1, 90403 Nürnberg',             'slots' => 30,  'zones' => ['Untergeschoss']],
-        ['name' => 'Parkhaus Technologiepark',   'address' => 'Technologiestraße 8, 76131 Karlsruhe',       'slots' => 75,  'zones' => ['Erdgeschoss', '1. Etage', '2. Etage']],
-        ['name' => 'Parkplatz Universität',      'address' => 'Universitätsring 1, 69120 Heidelberg',       'slots' => 70,  'zones' => ['Hauptcampus', 'Nebencampus']],
-        ['name' => 'Parkplatz Klinikum',         'address' => 'Klinikumsallee 15, 44137 Dortmund',          'slots' => 45,  'zones' => ['Besucher', 'Personal']],
-        ['name' => 'P+R Bahnhof Ost',           'address' => 'Ostbahnhofstraße 3, 04315 Leipzig',          'slots' => 55,  'zones' => ['Tagesparker', 'Dauerparker']],
+        ['name' => 'CP Block A Parking', 'address' => 'Connaught Place, New Delhi', 'city' => 'New Delhi', 'slots' => 60,  'zones' => ['Premium Covered', 'EV Charging Only', 'Two-Wheeler designated']],
+        ['name' => 'UB City Basement', 'address' => 'Vittal Mallya Rd, Bengaluru', 'city' => 'Bengaluru', 'slots' => 120, 'zones' => ['VIP Wing', 'EV Charging Only', 'Standard']],
+        ['name' => 'BKC Financial District', 'address' => 'Bandra Kurla Complex, Mumbai', 'city' => 'Mumbai', 'slots' => 150, 'zones' => ['Ground', 'Floor 1', 'Premium Covered']],
+        ['name' => 'DLF Cyber Hub Parking', 'address' => 'Cyber City, Gurugram', 'city' => 'Gurgaon', 'slots' => 100, 'zones' => ['North Wing', 'South Wing', 'EV Charging Only']],
+        ['name' => 'Phoenix Mall Parking', 'address' => 'Viman Nagar, Pune', 'city' => 'Pune', 'slots' => 80,  'zones' => ['Outdoor', 'Basement', 'Two-Wheeler designated']],
+        ['name' => 'HITEC City P1', 'address' => 'Madhapur, Hyderabad', 'city' => 'Hyderabad', 'slots' => 90,  'zones' => ['Basement', 'EV Charging Only']],
+        ['name' => 'Marina Beach Parking', 'address' => 'Marina Beach Rd, Chennai', 'city' => 'Chennai', 'slots' => 75,  'zones' => ['Ground', 'Two-Wheeler designated']],
+        ['name' => 'Salt Lake Sector V', 'address' => 'Sector V, Kolkata', 'city' => 'Kolkata', 'slots' => 70,  'zones' => ['Main Campus', 'Annex']],
+        ['name' => 'SG Highway P+R', 'address' => 'SG Highway, Ahmedabad', 'city' => 'Ahmedabad', 'slots' => 65,  'zones' => ['Visitor', 'Staff']],
+        ['name' => 'Sector 17 Plaza Parking', 'address' => 'Sector 17, Chandigarh', 'city' => 'Chandigarh', 'slots' => 55,  'zones' => ['Daily', 'Monthly', 'EV Charging Only']],
+        ['name' => 'Lulu Mall Basement', 'address' => 'Edappally, Kochi', 'city' => 'Kochi', 'slots' => 90, 'zones' => ['P1', 'P2', 'Premium Covered']],
+        ['name' => 'Gomti Nagar Parking', 'address' => 'Gomti Nagar, Lucknow', 'city' => 'Lucknow', 'slots' => 60, 'zones' => ['Block A', 'Block B']],
+        ['name' => 'Palasia Square', 'address' => 'Palasia, Indore', 'city' => 'Indore', 'slots' => 40, 'zones' => ['Level 1', 'Two-Wheeler designated']],
+        ['name' => 'MI Road Parking', 'address' => 'MI Road, Jaipur', 'city' => 'Jaipur', 'slots' => 50, 'zones' => ['Ground', 'Underground']],
+        ['name' => 'Bhopal DB Mall', 'address' => 'MP Nagar, Bhopal', 'city' => 'Bhopal', 'slots' => 80, 'zones' => ['Zone A', 'Zone B', 'VIP']],
+        // Additional High Capacity Indian Lots
+        ['name' => 'Electronic City Phase 1', 'address' => 'Hosur Road, Bengaluru', 'city' => 'Bengaluru', 'slots' => 150, 'zones' => ['Tech Park A', 'Tech Park B', 'EV Charging Only']],
+        ['name' => 'Andheri East Hub', 'address' => 'Andheri East, Mumbai', 'city' => 'Mumbai', 'slots' => 110, 'zones' => ['Underground P1', 'Underground P2', 'Premium Covered']],
+        ['name' => 'Manyata Tech Park', 'address' => 'Nagavara, Bengaluru', 'city' => 'Bengaluru', 'slots' => 200, 'zones' => ['Block C', 'Block D', 'Two-Wheeler designated']],
+        ['name' => 'Infocity Bhubaneswar', 'address' => 'Patia, Bhubaneswar', 'city' => 'Bhubaneswar', 'slots' => 50, 'zones' => ['Zone 1', 'EV Charging Only']],
+        ['name' => 'Noida Sector 62', 'address' => 'Sector 62, Noida', 'city' => 'Noida', 'slots' => 85, 'zones' => ['Tower A', 'Tower B']],
     ];
 
     private const FIRST_NAMES = [
-        'Hans', 'Peter', 'Klaus', 'Michael', 'Thomas', 'Andreas', 'Stefan', 'Christian',
-        'Markus', 'Sebastian', 'Daniel', 'Tobias', 'Florian', 'Matthias', 'Martin',
-        'Frank', 'Jürgen', 'Uwe', 'Carsten', 'Oliver', 'Maria', 'Anna', 'Sandra',
-        'Andrea', 'Nicole', 'Stefanie', 'Christina', 'Monika', 'Petra', 'Claudia',
-        'Katja', 'Sabine', 'Julia', 'Laura', 'Sarah', 'Lisa', 'Katharina', 'Melanie',
-        'Susanne', 'Anja', 'Bernd', 'Wolfgang', 'Rainer', 'Dieter', 'Helmut',
-        'Gerhard', 'Manfred', 'Günter', 'Werner', 'Karl', 'Heike', 'Renate',
-        'Ursula', 'Brigitte', 'Ingrid', 'Elke', 'Gabi', 'Birgit', 'Karin', 'Silke',
+        'Aarav', 'Vihaan', 'Aditya', 'Arjun', 'Sai', 'Rohan', 'Krishna', 'Ishaan',
+        'Shaurya', 'Atharv', 'Kabir', 'Rishi', 'Karan', 'Dev', 'Ayush',
+        'Rahul', 'Rohit', 'Siddharth', 'Amit', 'Vikram', 'Priya', 'Ananya', 'Diya',
+        'Sneha', 'Neha', 'Pooja', 'Riya', 'Aisha', 'Kavya', 'Aditi',
+        'Kriti', 'Shruti', 'Swati', 'Megha', 'Nisha', 'Tanvi', 'Anjali', 'Simran',
+        'Ramesh', 'Suresh', 'Rajesh', 'Sunil', 'Anil', 'Mukesh', 'Sanjay',
+        'Vijay', 'Ajay', 'Deepak', 'Manoj', 'Ravi', 'Geeta', 'Sita',
+        'Lata', 'Asha', 'Usha', 'Rekha', 'Kiran', 'Sushma', 'Sunita', 'Anita',
     ];
 
     private const LAST_NAMES = [
-        'Müller', 'Schmidt', 'Schneider', 'Fischer', 'Weber', 'Meyer', 'Wagner',
-        'Becker', 'Schulz', 'Hoffmann', 'Koch', 'Richter', 'Bauer', 'Klein', 'Wolf',
-        'Schröder', 'Neumann', 'Schwarz', 'Zimmermann', 'Braun', 'Krüger', 'Hofmann',
-        'Hartmann', 'Lang', 'Schmitt', 'Winter', 'Berger', 'Weiß', 'Lange', 'Schmitz',
-        'Kraus', 'Mayer', 'Huber', 'Maier', 'Lehmann', 'Köhler', 'Herrmann', 'König',
-        'Walter', 'Mayer', 'Fuchs', 'Kaiser', 'Peters', 'Jung', 'Hahn', 'Scholz',
+        'Sharma', 'Patel', 'Singh', 'Kumar', 'Das', 'Kaur', 'Gupta',
+        'Mishra', 'Bhatt', 'Reddy', 'Rao', 'Iyer', 'Pillai', 'Nair', 'Menon',
+        'Chauhan', 'Thakur', 'Yadav', 'Joshi', 'Verma', 'Dubey', 'Pandey',
+        'Deshmukh', 'Jadhav', 'Pawar', 'Kadam', 'Bose', 'Chatterjee', 'Sen', 'Banerjee',
+        'Kapoor', 'Malhotra', 'Chopra', 'Ahuja', 'Khanna', 'Mehta', 'Shah', 'Desai',
+        'Agarwal', 'Garg', 'Jain', 'Gowda', 'Shetty', 'Patil', 'Bansal', 'Soni',
     ];
 
     private const DEPARTMENTS = [
-        'IT', 'Verwaltung', 'Vertrieb', 'Marketing', 'Finanzen',
-        'Logistik', 'Produktion', 'HR', 'Einkauf', 'Recht',
+        'IT', 'HR', 'Finance', 'Marketing', 'Sales',
+        'Operations', 'Legal', 'Procurement', 'Engineering', 'Product',
     ];
 
     private const PLATE_PREFIXES = [
-        'M', 'HH', 'B', 'K', 'F', 'S', 'N', 'DO', 'E', 'L',
-        'HD', 'KA', 'MA', 'A', 'R', 'BO', 'WÜ', 'OB', 'WI', 'MÜ',
+        'MH01', 'MH02', 'DL01', 'DL04', 'KA01', 'KA03', 'KA05', 'TS09', 'TN01', 'TN09',
+        'WB02', 'GJ01', 'GJ05', 'UP14', 'UP16', 'UP32', 'RJ14', 'PB01', 'CH01', 'MP04',
     ];
 
     private const CAR_MAKES = [
-        ['make' => 'Volkswagen', 'models' => ['Golf', 'Passat', 'Tiguan', 'Polo', 'T-Roc']],
-        ['make' => 'BMW',        'models' => ['3er', '5er', 'X5', '1er', 'X3']],
-        ['make' => 'Mercedes',   'models' => ['C-Klasse', 'E-Klasse', 'A-Klasse', 'GLC', 'B-Klasse']],
-        ['make' => 'Audi',       'models' => ['A4', 'A6', 'Q5', 'A3', 'Q3']],
-        ['make' => 'Opel',       'models' => ['Astra', 'Corsa', 'Insignia', 'Zafira', 'Mokka']],
-        ['make' => 'Ford',       'models' => ['Focus', 'Fiesta', 'Kuga', 'Puma', 'EcoSport']],
-        ['make' => 'Skoda',      'models' => ['Octavia', 'Superb', 'Fabia', 'Karoq', 'Kodiaq']],
-        ['make' => 'Renault',    'models' => ['Clio', 'Megane', 'Kadjar', 'Captur', 'Zoe']],
-        ['make' => 'Toyota',     'models' => ['Corolla', 'Yaris', 'RAV4', 'Aygo', 'C-HR']],
-        ['make' => 'Hyundai',    'models' => ['i30', 'Tucson', 'Kona', 'i20', 'Santa Fe']],
+        ['make' => 'Maruti Suzuki', 'models' => ['Swift', 'Baleno', 'WagonR', 'Dzire', 'Brezza']],
+        ['make' => 'Hyundai',       'models' => ['Creta', 'i20', 'Venue', 'Verna', 'Grand i10']],
+        ['make' => 'Tata',          'models' => ['Nexon', 'Harrier', 'Tiago', 'Punch', 'Safari']],
+        ['make' => 'Mahindra',      'models' => ['XUV700', 'Thar', 'Scorpio', 'Bolero', 'XUV300']],
+        ['make' => 'Honda',         'models' => ['City', 'Amaze', 'Elevate', 'WR-V', 'Jazz']],
+        ['make' => 'Toyota',        'models' => ['Innova', 'Fortuner', 'Glanza', 'Hyryder', 'Camry']],
+        ['make' => 'Kia',           'models' => ['Seltos', 'Sonet', 'Carens', 'Carnival']],
+        ['make' => 'Volkswagen',    'models' => ['Polo', 'Virtus', 'Taigun', 'Vento']],
+        ['make' => 'Skoda',         'models' => ['Slavia', 'Kushaq', 'Octavia', 'Superb']],
+        ['make' => 'MG',            'models' => ['Hector', 'Astor', 'Gloster', 'Comet']],
     ];
 
-    private const COLORS = ['Schwarz', 'Weiß', 'Silber', 'Grau', 'Blau', 'Rot', 'Grün', 'Braun'];
+    private const COLORS = ['Black', 'White', 'Silver', 'Grey', 'Blue', 'Red', 'Green', 'Brown'];
 
     // -------------------------------------------------------------------------
     // Entry point
@@ -84,8 +96,7 @@ class ProductionSimulationSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('🏁 ParkHub Production Simulation Seeder starting...');
-
-        DB::statement('PRAGMA foreign_keys = OFF');
+        Schema::disableForeignKeyConstraints();
 
         $this->seedSettings();
         $adminIds = $this->seedAdmins();
@@ -98,9 +109,10 @@ class ProductionSimulationSeeder extends Seeder
         $this->seedNotifications($userIds);
         $this->seedFavorites($userIds, $lotData);
         $this->seedGuestBookings($adminIds, $lotData);
+        $this->seedWalletTransactions($userIds);
         $this->seedAuditLog($userIds, $adminIds);
 
-        DB::statement('PRAGMA foreign_keys = ON');
+        Schema::enableForeignKeyConstraints();
 
         $this->command->info('✅ Seed complete! Stats:');
         $this->command->table(
@@ -116,6 +128,7 @@ class ProductionSimulationSeeder extends Seeder
                 ['Notifications',   DB::table('notifications_custom')->count()],
                 ['Favorites',       DB::table('favorites')->count()],
                 ['Guest Bookings',  DB::table('guest_bookings')->count()],
+                ['Wallet Txns',     DB::table('credit_transactions')->count()],
                 ['Audit Log',       DB::table('audit_log')->count()],
             ]
         );
@@ -250,8 +263,10 @@ class ProductionSimulationSeeder extends Seeder
                 'id' => $lotId,
                 'name' => $lotDef['name'],
                 'address' => $lotDef['address'],
+                'city' => $lotDef['city'] ?? 'Unknown',
                 'total_slots' => $lotDef['slots'],
                 'available_slots' => $lotDef['slots'],
+                'available_spots' => $lotDef['slots'],
                 'status' => 'open',
                 'created_at' => now()->subDays(35),
                 'updated_at' => now(),
@@ -314,7 +329,7 @@ class ProductionSimulationSeeder extends Seeder
     private function seedUsers(): array
     {
         $userIds = [];
-        $userCount = 198;
+        $userCount = 498;
         $usedNames = [];
 
         $this->command->line('  → Seeding '.$userCount.' users...');
@@ -391,9 +406,9 @@ class ProductionSimulationSeeder extends Seeder
     {
         $bookings = [];
         $now = Carbon::now();
-        $start = $now->copy()->subDays(30)->startOfDay();
+        $start = $now->copy()->subDays(365)->startOfDay();
 
-        $this->command->line('  → Generating ~3500 bookings over 30 days...');
+        $this->command->line('  → Generating ~12000 bookings over 365 days...');
 
         // Pre-fetch slot_id → slot_number once instead of running a query per booking.
         // ~4500 bookings × 1 query = 4500 queries ≈ 30-60s on Render free tier.
@@ -401,11 +416,11 @@ class ProductionSimulationSeeder extends Seeder
             ->pluck('slot_number', 'id')
             ->toArray();
 
-        for ($day = 0; $day < 30; $day++) {
+        for ($day = 0; $day < 365; $day++) {
             $date = $start->copy()->addDays($day);
             $dayOfWeek = $date->dayOfWeek; // 0=Sun, 6=Sat
             $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
-            $target = $isWeekend ? rand(40, 70) : rand(130, 170);
+            $target = $isWeekend ? rand(15, 25) : rand(30, 45);
 
             for ($b = 0; $b < $target; $b++) {
                 $user = $userIds[array_rand($userIds)];
@@ -814,6 +829,47 @@ class ProductionSimulationSeeder extends Seeder
 
         DB::table('guest_bookings')->insert($guestBookings);
         $this->command->line('  → '.count($guestBookings).' guest bookings seeded');
+    }
+
+    // -------------------------------------------------------------------------
+    // Wallet Transactions
+    // -------------------------------------------------------------------------
+
+    private function seedWalletTransactions(array $userIds): void
+    {
+        $transactions = [];
+        $this->command->line('  → Seeding wallet transactions...');
+
+        foreach ($userIds as $userData) {
+            $txn_count = rand(2, 10);
+            for ($i = 0; $i < $txn_count; $i++) {
+                $type = rand(1, 100) <= 70 ? 'deduction' : 'deposit';
+                $amount = rand(5, 50);
+
+                $transactions[] = [
+                    'id' => Str::uuid()->toString(),
+                    'user_id' => $userData['id'],
+                    'booking_id' => null,
+                    'amount' => $type === 'deduction' ? -$amount : $amount,
+                    'type' => $type,
+                    'description' => $type === 'deduction' ? 'Parkgebühr' : 'Guthaben Aufladung',
+                    'granted_by' => null,
+                    'created_at' => now()->subDays(rand(1, 100))->toDateTimeString(),
+                    'updated_at' => now()->subDays(rand(1, 100))->toDateTimeString(),
+                ];
+
+                if (count($transactions) >= 500) {
+                    DB::table('credit_transactions')->insert($transactions);
+                    $transactions = [];
+                }
+            }
+        }
+
+        if (!empty($transactions)) {
+            DB::table('credit_transactions')->insert($transactions);
+        }
+
+        $this->command->line('  → '.DB::table('credit_transactions')->count().' wallet transactions seeded');
     }
 
     // -------------------------------------------------------------------------

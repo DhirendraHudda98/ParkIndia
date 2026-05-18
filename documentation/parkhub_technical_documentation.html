@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ParkHub (ParkIndia) - Technical Architecture & System Documentation</title>
+    <style>
+        @page {
+            margin: 1.2cm;
+        }
+        body {
+            font-family: 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif;
+            color: #1e293b;
+            line-height: 1.4;
+            font-size: 8.5pt;
+        }
+        .cover-page {
+            text-align: center;
+            padding-top: 5cm;
+            height: 100%;
+            page-break-after: always;
+        }
+        .cover-logo {
+            font-size: 28pt;
+            font-weight: bold;
+            color: #0f172a;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        .cover-logo span {
+            color: #0d9488;
+        }
+        .cover-subtitle {
+            font-size: 13pt;
+            color: #475569;
+            margin-top: 5px;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+        }
+        .cover-divider {
+            width: 80px;
+            height: 4px;
+            background-color: #0d9488;
+            margin: 0 auto 40px auto;
+        }
+        .cover-meta {
+            font-size: 9.5pt;
+            color: #64748b;
+            margin-top: 15cm;
+            line-height: 1.6;
+        }
+        
+        .page-break {
+            page-break-after: always;
+        }
+        
+        h1 {
+            font-size: 16pt;
+            color: #0f172a;
+            margin-top: 0;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #0d9488;
+            padding-bottom: 4px;
+            page-break-after: avoid;
+        }
+        h2 {
+            font-size: 11pt;
+            color: #0d9488;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 3px;
+            page-break-after: avoid;
+        }
+        h3 {
+            font-size: 9.5pt;
+            color: #334155;
+            margin-top: 12px;
+            margin-bottom: 6px;
+            page-break-after: avoid;
+        }
+        p {
+            margin: 0 0 10px 0;
+            text-align: justify;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        th {
+            background-color: #0d9488;
+            color: #ffffff;
+            font-weight: bold;
+            text-align: left;
+            padding: 6px 8px;
+            font-size: 8pt;
+            border: 1px solid #0d9488;
+        }
+        td {
+            padding: 5px 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 7.5pt;
+            vertical-align: top;
+        }
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        ul, ol {
+            margin: 0 0 10px 0;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 4px;
+        }
+        
+        code {
+            font-family: 'DejaVu Sans Mono', monospace;
+            font-size: 7.5pt;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+        
+        pre {
+            font-family: 'DejaVu Sans Mono', monospace;
+            font-size: 7.5pt;
+            background-color: #f8fafc;
+            border-left: 3px solid #64748b;
+            padding: 8px;
+            margin: 8px 0;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        
+        .diagram-box {
+            font-family: 'DejaVu Sans Mono', monospace;
+            font-size: 7pt;
+            line-height: 1.2;
+            background-color: #0f172a;
+            color: #38bdf8;
+            padding: 12px;
+            border-radius: 4px;
+            border-left: 4px solid #0d9488;
+            margin: 10px 0;
+            page-break-inside: avoid;
+        }
+        
+        .alert-box {
+            background-color: #f0fdfa;
+            border-left: 4px solid #0d9488;
+            padding: 8px 12px;
+            margin: 10px 0;
+            font-size: 8pt;
+            color: #115e59;
+            page-break-inside: avoid;
+        }
+        .alert-box strong {
+            color: #0f766e;
+        }
+
+        /* Screenshot styles */
+        .screenshot-container {
+            text-align: center;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+        .screenshot-img {
+            width: 95%;
+            max-height: 8cm;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background-color: #f8fafc;
+        }
+        .screenshot-caption {
+            font-size: 8pt;
+            color: #475569;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+        <div class="cover-logo">Park<span>Hub</span></div>
+        <div class="cover-subtitle">Smart City Geolocation Parking Discovery & Integrated Digital Wallet Platform</div>
+        <div class="cover-divider"></div>
+        <p style="text-align: center; color: #475569; max-width: 600px; margin: 0 auto; font-size: 10pt;">
+            A Comprehensive Architectural Specification, Technical Reference, Database Schema Analysis, and Local XAMPP Deployment Guide.
+        </p>
+        <div class="cover-meta">
+            <strong>Prepared by:</strong> Antigravity AI Engineering & Senior Software Architect Group<br>
+            <strong>Version:</strong> 1.0.0 (Production Grade)<br>
+            <strong>Platform Stack:</strong> Laravel 11 (PHP 8.2+) / React 18 + Astro 6 (JavaScript) / MySQL (XAMPP)<br>
+            <strong>Date:</strong> May 2026
+        </div>
+    </div>
+
+    <!-- SECTION 1 -->
+    <h1>1. Project Overview & Architectural Paradigm</h1>
+    <p>
+        <strong>ParkHub</strong> (localized for regional operations as <strong>ParkIndia</strong>) is a high-availability, real-time B2C parking reservation, discovery, and smart-city management platform. It addresses critical urban logistics challenges: traffic congestion caused by vehicles searching for parking spaces, fuel wastage, billing complexity, dynamic demand management, and lack of visual booking space control.
+    </p>
+    
+    <h2>1.1 Core Problems Solved</h2>
+    <ul>
+        <li><strong>Urban Traffic Mitigation</strong>: Reduces block-circling behavior by showcasing real-time occupancy.</li>
+        <li><strong>Financial Transparency</strong>: Replaces manual paper ticketing with atomic credit wallet accounting.</li>
+        <li><strong>User-Experience Friction</strong>: Eliminates spot-hunting through precise 2D bay visual selection.</li>
+        <li><strong>System Integration</strong>: Bridges software bookings with physical barrier gates via hardware webhooks.</li>
+    </ul>
+
+    <h2>1.2 Key System Capabilities</h2>
+    <ul>
+        <li><strong>Interactive GIS Map</strong>: Employs Leaflet.js map view with customized coordinates and color markers to display spot counts across cities.</li>
+        <li><strong>2D Floor Layout Grid</strong>: Generates responsive grids of parking bays categorized by zone parameters (Standard, VIP, EV Charging, Accessible).</li>
+        <li><strong>Atomic Wallet System</strong>: Manages credit balances within a digital transactional ledger, incorporating automatic refunds on user cancellation.</li>
+        <li><strong>Simulated Gate Controller webhooks</strong>: Automated Number Plate Recognition (ANPR) cameras trigger check-in gates instantly on plate match.</li>
+    </ul>
+
+    <h2>1.3 Technology Stack Profile</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Layer</th>
+                <th style="width: 35%;">Technologies</th>
+                <th style="width: 40%;">Architectural Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Frontend Client</strong></td>
+                <td>React 18, Astro 6, Leaflet.js, Axios</td>
+                <td>Single Page Application (SPA), GIS map canvas, client-side route flow.</td>
+            </tr>
+            <tr>
+                <td><strong>Backend Gateway</strong></td>
+                <td>Laravel 11, PHP 8.2+, Eloquent ORM</td>
+                <td>REST API, transactional business rules engine, database gateway.</td>
+            </tr>
+            <tr>
+                <td><strong>Authentication</strong></td>
+                <td>Laravel Sanctum, Bcrypt Hashing</td>
+                <td>Stateful cookie and secure bearer-token session authorization.</td>
+            </tr>
+            <tr>
+                <td><strong>Database & Cache</strong></td>
+                <td>MySQL 8.0, XAMPP, phpMyAdmin</td>
+                <td>Relational transaction storage with acid isolation, schema versioning.</td>
+            </tr>
+            <tr>
+                <td><strong>Utility Addons</strong></td>
+                <td>Dompdf 3.1, Chillerlan QR Code</td>
+                <td>PDF invoice compilation, secure entry-pass QR code rendering.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- SECTION 2 -->
+    <h1>2. Complete Folder Structure Mapping</h1>
+    <p>
+        The codebase is partitioned into a <strong>Laravel RDBMS API core</strong> (root project) and a modular <strong>Astro/React SPA view client</strong> (contained within <code>/parkhub-web</code>). Below is a comprehensive blueprint detailing every directory and critical file:
+    </p>
+
+    <h2>2.1 Backend Project Directory Structure (Laravel)</h2>
+    <pre>parkhub-php/
+├── app/
+│   ├── Console/             # Cron scheduling and background Artisan engines
+│   │   └── Commands/
+│   │       └── CheckParkingAvailability.php   # Syncs real-time occupancy counts
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   └── Api/         # Unified REST Controllers (69 controllers)
+│   │   │       ├── AuthController.php         # User Register &amp; Login processing
+│   │   │       ├── BookingController.php      # Main booking transaction controller
+│   │   │       ├── AdminAnalyticsController.php # Dashboard metric visual compiler
+│   │   │       └── WalletController.php       # Credit Wallet balance &amp; transaction management
+│   │   ├── Middleware/
+│   │   │   └── EnsureUserIsAdmin.php          # REST administration gatekeeper
+│   │   └── Requests/        # Payload verification schemas (FormRequests)
+│   ├── Models/              # Eloquent Database RDBMS Models
+│   │   ├── User.php, Booking.php, ParkingLot.php, ParkingSlot.php
+│   │   ├── CreditTransaction.php, Vehicle.php, AuditLog.php, Zone.php
+│   └── Services/            # Business Logic &amp; Calculation Engines
+│       ├── BookingCreationService.php         # Atomic booking validation and creation
+│       ├── ParkingAvailabilityService.php     # Real-time space cache resolver
+│       └── PricingEngineService.php           # Dynamic hourly and daily cost engine
+├── bootstrap/               # Core framework configuration bootstrapper
+├── config/                  # App environment configuration files
+├── database/
+│   ├── migrations/          # RDBMS database schema version migrations
+│   └── seeders/             # Database seed data generators
+│       ├── IndianParkingLotsSeeder.php        # Seeds 15 Indian metropolitan lots
+│       └── ProductionSimulationSeeder.php    # Runs large-scale simulation scripts
+├── routes/
+│   ├── api.php              # REST API Routing paths (Sanctum protected)
+│   └── web.php              # Standard web views catch-all router
+└── public/                  # Document root folder, exposes compiled web assets</pre>
+
+    <h2>2.2 Frontend SPA Directory Structure (Astro + React)</h2>
+    <pre>parkhub-php/parkhub-web/
+├── public/                  # Static assets (images, icons, SVGs, favicon)
+├── src/
+│   ├── App.jsx              # React router shell and layout manager
+│   ├── api/
+│   │   └── client.js        # Axios HTTP client, handles token injection headers
+│   ├── components/          # Reusable shared components (Navbar, Sidebar, Modals)
+│   ├── hooks/               # Custom React Hooks
+│   │   ├── useAuth.js       # Global authentication state hook
+│   │   └── useWallet.js     # Wallet transaction &amp; balance hook
+│   ├── pages/               # Astro routes
+│   ├── views/               # Module-specific view components
+│   │   ├── Login.jsx        # Login &amp; sign-up form screens
+│   │   ├── MapView.jsx      # Leaflet.js geolocation maps &amp; search pins
+│   │   ├── Bookings.jsx     # User booking management and invoice views
+│   │   ├── Wallet.jsx       # Glassmorphic digital wallet &amp; credit top-up panel
+│   │   └── AdminAnalytics.jsx # Admin chart visualization center
+│   └── styles/              # Global variables, HSL color tokens, and custom styles
+├── astro.config.mjs         # Build system configuration
+└── package.json             # NPM package manifests</pre>
+
+    <div class="page-break"></div>
+
+    <!-- SECTION 3 -->
+    <h1>3. The MVC Request Lifecycle Flow</h1>
+    <p>
+        The ParkHub platform uses a decoupled Model-View-Controller (MVC) architecture. The client frontend handles the View layer, transmitting requests via REST APIs to the Laravel Model-Controller backend.
+    </p>
+
+    <div class="diagram-box">
+[ React View Client ] (axios HTTP Request)
+        ||
+        ||  1. POST /api/bookings { lot_id, slot_id, times, vehicle_plate }
+        \/
+[ REST Route Gateway: routes/api.php ]
+        ||
+        ||  2. Verifies Session &amp; Sanctum Bearer Token
+        \/
+[ Middleware Pipeline: auth:sanctum ]
+        ||
+        ||  3. Parses Payload into FormRequest Valids
+        \/
+[ API Controller: app/Http/Controllers/Api/BookingController@store ]
+        ||
+        ||  4. Instantiates Business Services Engine
+        \/
+[ Business Service: app/Services/BookingCreationService ]
+        ||
+        ||  5. Executes DB Transaction (FOR UPDATE atomic row locking)
+        \/
+[ Database Persistence: MySQL &amp; InnoDB Tables ] ===(Save &amp; Commit)===> [ DB Storage ]
+        ||
+        ||  6. Serializes Database Records as JSON
+        \/
+[ Controller JSON Resource Response ]
+        ||
+        ||  7. Returns HTTP 200 OK success payload
+        \/
+[ React View Client ] (Renders check-in QR pass and updates wallet balance)
+    </div>
+
+    <h2>3.1 Request Lifecycle Stages</h2>
+    <ol>
+        <li><strong>Request Dispatch</strong>: A user selects a slot (e.g. "A-1" at BKC Plaza) from <code>14:00</code> to <code>16:00</code> for vehicle <code>MH01AB1234</code>. The browser sends a POST request to <code>/api/bookings</code>.</li>
+        <li><strong>Routing and Security Middlewares</strong>: <code>routes/api.php</code> routes the request through a Sanctum middleware barrier. If authenticated, the user profile is loaded into context.</li>
+        <li><strong>Payload Sanitization</strong>: Input is verified by a request validator (FormRequest), checking date rules and confirming the vehicle plate matches valid state formats.</li>
+        <li><strong>Service Execution</strong>: The controller invokes the <code>BookingCreationService</code>. A MySQL transaction begins, locking the target slot record using <code>FOR UPDATE</code> to prevent simultaneous bookings by other threads.</li>
+        <li><strong>Atomic Financial Ledgering</strong>: The system calculates cost, verifies that the user's wallet balance covers it, deducts credits, writes an audit record, and updates the slot status to `'reserved'`.</li>
+        <li><strong>JSON View Compilation</strong>: The database changes commit, and the API controller compiles a formatted JSON response containing invoice details and a check-in QR code token.</li>
+    </ol>
+
+    <div class="page-break"></div>
+
+    <!-- SECTION 4 -->
+    <h1>4. API &amp; Web Routing Engine</h1>
+    <p>
+        Routing endpoints are divided into web and API channels, providing secure access and path separation.
+    </p>
+
+    <h2>4.1 Route File Definitions</h2>
+    <ul>
+        <li><strong>Web Router (<code>routes/web.php</code>)</strong>: Used for system health checks, Blade file renders, and client single-page-application (SPA) fallback loaders.</li>
+        <li><strong>API Router (<code>routes/api.php</code>)</strong>: Handles all REST controllers, grouped by authentication requirements.</li>
+    </ul>
+
+    <h2>4.2 Important API Routes Reference Table</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%;">Method</th>
+                <th style="width: 30%;">URI Endpoint</th>
+                <th style="width: 35%;">Target Controller Action</th>
+                <th style="width: 25%;">Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>POST</strong></td>
+                <td><code>/api/login</code></td>
+                <td><code>AuthController@login</code></td>
+                <td>Authenticates credentials, returns session token.</td>
+            </tr>
+            <tr>
+                <td><strong>POST</strong></td>
+                <td><code>/api/register</code></td>
+                <td><code>AuthController@register</code></td>
+                <td>Creates user, grants base wallet credits.</td>
+            </tr>
+            <tr>
+                <td><strong>GET</strong></td>
+                <td><code>/api/availability</code></td>
+                <td><code>ParkingAvailabilityController@index</code></td>
+                <td>Lists active slots across lots.</td>
+            </tr>
+            <tr>
+                <td><strong>GET</strong></td>
+                <td><code>/api/cities</code></td>
+                <td><code>CityController@index</code></td>
+                <td>Lists supported Indian metropolitan hubs.</td>
+            </tr>
+            <tr>
+                <td><strong>GET</strong></td>
+                <td><code>/api/bookings</code></td>
+                <td><code>BookingController@index</code></td>
+                <td>Retrieves active and historic bookings.</td>
+            </tr>
+            <tr>
+                <td><strong>POST</strong></td>
+                <td><code>/api/bookings</code></td>
+                <td><code>BookingController@store</code></td>
+                <td>Creates a booking and deducts wallet balance.</td>
+            </tr>
+            <tr>
+                <td><strong>DELETE</strong></td>
+                <td><code>/api/bookings/{id}</code></td>
+                <td><code>BookingController@destroy</code></td>
+                <td>Cancels reservation, processes balance refunds.</td>
+            </tr>
+            <tr>
+                <td><strong>POST</strong></td>
+                <td><code>/api/bookings/{id}/check-in</code></td>
+                <td><code>BookingCheckInController@checkin</code></td>
+                <td>Logs check-in time and sets slot status.</td>
+            </tr>
+            <tr>
+                <td><strong>GET</strong></td>
+                <td><code>/api/user/wallet/balance</code></td>
+                <td><code>WalletController@getBalance</code></td>
+                <td>Returns user's current wallet credits balance.</td>
+            </tr>
+            <tr>
+                <td><strong>POST</strong></td>
+                <td><code>/api/user/wallet/add</code></td>
+                <td><code>WalletController@addCredits</code></td>
+                <td>Top-up user's digital wallet balance.</td>
+            </tr>
+            <tr>
+                <td><strong>GET</strong></td>
+                <td><code>/api/admin/analytics/overview</code></td>
+                <td><code>AdminAnalyticsController@overview</code></td>
+                <td>Compiles admin dashboard analytics metrics.</td>
+            </tr>
+            <tr>
+                <td><strong>POST</strong></td>
+                <td><code>/api/webhooks/hardware/anpr</code></td>
+                <td><code>HardwareWebhookController@handleAnpr</code></td>
+                <td>Simulates boom gate opening on plate match.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="alert-box">
+        <strong>[!] Route Rate-Limiter Policy</strong>: Public route groups (like login/register and webhook inputs) are protected by a throttle middleware (default: <code>throttle:60,1</code>) to prevent brute-force attacks.
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECTION 5 -->
+    <h1>5. Controller Architecture &amp; Core Controllers</h1>
+    <p>
+        The API layer is structured with single-responsibility controllers residing in <code>app/Http/Controllers/Api/</code>. Below is a detailed breakdown of the three key controller divisions:
+    </p>
+
+    <h2>5.1 Authentication Controller (<code>AuthController.php</code>)</h2>
+    <p>
+        Manages user registration, secure session creation, user profile updates, and active session verification.
+    </p>
+    <ul>
+        <li><code>login(Request $request)</code>: Validates credentials, checks accounts, logs users in, updates `last_login`, and returns a session token.</li>
+        <li><code>register(Request $request)</code>: Creates user models, hashes passwords using Bcrypt, sets default wallet balance quotas, and automatically generates session tokens.</li>
+        <li><code>logout(Request $request)</code>: Revokes current Sanctum bearer tokens and ends server sessions.</li>
+        <li><code>me()</code>: Returns current user statistics, wallet balance, and user roles (user, admin, superadmin).</li>
+    </ul>
+
+    <h2>5.2 Booking Controller (<code>BookingController.php</code>)</h2>
+    <p>
+        Coordinates space validation, processes dynamic pricing calculations, handles wallet balance payments, and logs transaction files.
+    </p>
+    <ul>
+        <li><code>index(Request $request)</code>: Returns paginated lists of user bookings, filterable by date and booking status.</li>
+        <li><code>store(StoreBookingRequest $request)</code>: The core booking handler. Runs payload validations, verifies slot availability, processes wallet payment, updates slot state, and creates the booking record.</li>
+        <li><code>destroy($id)</code>: Processes cancellations. Releases the reserved slot, calculates the refund amount, and inserts an audit log entry.</li>
+        <li><code>quickBook(Request $request)</code>: Instantly finds and allocates the nearest available parking space in a selected lot.</li>
+    </ul>
+
+    <h2>5.3 Administrative Suite (<code>AdminAnalyticsController.php</code>)</h2>
+    <p>
+        Provides analytics dashboard data and reports for administrators and lot operations staff.
+    </p>
+    <ul>
+        <li><code>overview()</code>: Computes multi-lot KPI statistics: Total Revenue, Occupancy Rate, Total Bookings, Active Vehicles.</li>
+        <li><code>occupancy()</code>: Yields historical slot occupancy curves to identify peak hour congestion.</li>
+        <li><code>revenue()</code>: Summarizes daily, weekly, and monthly payment transactions to track earnings.</li>
+        <li><code>popularLots()</code>: Identifies top-performing hubs by reservation count and parking turnover.</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <!-- SECTION 6 -->
+    <h1>6. Database Schema Blueprint (Very Detailed)</h1>
+    <p>
+        The database schema is designed for relational consistency and fast lookups, utilizing InnoDB engines for transaction support.
+    </p>
+
+    <h2>6.1 RDBMS Table Specifications</h2>
+
+    <h3>Table: <code>users</code></h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Column Name</th>
+                <th style="width: 25%;">Data Type</th>
+                <th style="width: 20%;">Constraints / Keys</th>
+                <th style="width: 30%;">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>id</code></td>
+                <td><code>char(36)</code> (UUID)</td>
+                <td>Primary Key</td>
+                <td>Unique user identifier.</td>
+            </tr>
+            <tr>
+                <td><code>name</code></td>
+                <td><code>varchar(255)</code></td>
+                <td>Not Null</td>
+                <td>User's full name.</td>
+            </tr>
+            <tr>
+                <td><code>email</code></td>
+                <td><code>varchar(255)</code></td>
+                <td>Unique, Index</td>
+                <td>Email address used as login ID.</td>
+            </tr>
+            <tr>
+                <td><code>password</code></td>
+                <td><code>varchar(255)</code></td>
+                <td>Not Null</td>
+                <td>Bcrypt-encrypted password hash.</td>
+            </tr>
+            <tr>
+                <td><code>role</code></td>
+                <td><code>varchar(50)</code></td>
+                <td>Default: 'user'</td>
+                <td>Role flag: <code>user</code>, <code>admin</code>, <code>superadmin</code>.</td>
+            </tr>
+            <tr>
+                <td><code>credits_balance</code></td>
+                <td><code>int</code></td>
+                <td>Default: 0</td>
+                <td>Unified digital wallet balance.</td>
+            </tr>
+            <tr>
+                <td><code>credits_monthly_quota</code></td>
+                <td><code>int</code></td>
+                <td>Default: 40</td>
+                <td>Allocated monthly free quota limit.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Table: <code>parking_lots</code></h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Column Name</th>
+                <th style="width: 25%;">Data Type</th>
+                <th style="width: 20%;">Constraints / Keys</th>
+                <th style="width: 30%;">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>id</code></td>
+                <td><code>char(36)</code> (UUID)</td>
+                <td>Primary Key</td>
+                <td>Unique lot identifier.</td>
+            </tr>
+            <tr>
+                <td><code>name</code></td>
+                <td><code>varchar(255)</code></td>
+                <td>Not Null</td>
+                <td>Hub name (e.g. BKC Plaza).</td>
+            </tr>
+            <tr>
+                <td><code>city</code></td>
+                <td><code>varchar(100)</code></td>
+                <td>Index</td>
+                <td>City name for filtering.</td>
+            </tr>
+            <tr>
+                <td><code>latitude</code></td>
+                <td><code>decimal(10, 8)</code></td>
+                <td>Not Null</td>
+                <td>Geographic latitude coordinate.</td>
+            </tr>
+            <tr>
+                <td><code>longitude</code></td>
+                <td><code>decimal(11, 8)</code></td>
+                <td>Not Null</td>
+                <td>Geographic longitude coordinate.</td>
+            </tr>
+            <tr>
+                <td><code>total_slots</code></td>
+                <td><code>int</code></td>
+                <td>Not Null</td>
+                <td>Total parking capacity.</td>
+            </tr>
+            <tr>
+                <td><code>available_spots</code></td>
+                <td><code>int</code></td>
+                <td>Default: 0</td>
+                <td>Real-time available parking space count.</td>
+            </tr>
+            <tr>
+                <td><code>available_slots</code></td>
+                <td><code>int</code></td>
+                <td>Default: 0</td>
+                <td>Real-time available parking slot count (legacy/fallback).</td>
+            </tr>
+            <tr>
+                <td><code>hourly_rate_inr</code></td>
+                <td><code>decimal(10, 2)</code></td>
+                <td>Default: 0.00</td>
+                <td>Pricing rate in INR per hour.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <h3>Table: <code>parking_slots</code></h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Column Name</th>
+                <th style="width: 25%;">Data Type</th>
+                <th style="width: 20%;">Constraints / Keys</th>
+                <th style="width: 30%;">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>id</code></td>
+                <td><code>char(36)</code> (UUID)</td>
+                <td>Primary Key</td>
+                <td>Unique slot identifier.</td>
+            </tr>
+            <tr>
+                <td><code>lot_id</code></td>
+                <td><code>char(36)</code></td>
+                <td>Foreign Key, Index</td>
+                <td>Links to <code>parking_lots.id</code>.</td>
+            </tr>
+            <tr>
+                <td><code>slot_number</code></td>
+                <td><code>varchar(50)</code></td>
+                <td>Not Null</td>
+                <td>Unique code name (e.g., A-1, A-2).</td>
+            </tr>
+            <tr>
+                <td><code>status</code></td>
+                <td><code>varchar(50)</code></td>
+                <td>Default: 'available'</td>
+                <td>Status: <code>available</code>, <code>occupied</code>, <code>reserved</code>.</td>
+            </tr>
+            <tr>
+                <td><code>reserved_for_department</code></td>
+                <td><code>varchar(100)</code></td>
+                <td>Nullable</td>
+                <td>Dedicated parking label (EV, VIP, Accessible).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Table: <code>bookings</code></h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Column Name</th>
+                <th style="width: 25%;">Data Type</th>
+                <th style="width: 20%;">Constraints / Keys</th>
+                <th style="width: 30%;">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>id</code></td>
+                <td><code>char(36)</code> (UUID)</td>
+                <td>Primary Key</td>
+                <td>Unique booking identifier.</td>
+            </tr>
+            <tr>
+                <td><code>user_id</code></td>
+                <td><code>char(36)</code></td>
+                <td>Foreign Key, Index</td>
+                <td>Links to <code>users.id</code>.</td>
+            </tr>
+            <tr>
+                <td><code>slot_id</code></td>
+                <td><code>char(36)</code></td>
+                <td>Foreign Key, Index</td>
+                <td>Links to <code>parking_slots.id</code>.</td>
+            </tr>
+            <tr>
+                <td><code>start_time</code></td>
+                <td><code>timestamp</code></td>
+                <td>Not Null</td>
+                <td>Planned check-in start time.</td>
+            </tr>
+            <tr>
+                <td><code>end_time</code></td>
+                <td><code>timestamp</code></td>
+                <td>Not Null</td>
+                <td>Planned check-out end time.</td>
+            </tr>
+            <tr>
+                <td><code>status</code></td>
+                <td><code>varchar(50)</code></td>
+                <td>Default: 'confirmed'</td>
+                <td>Status: <code>confirmed</code>, <code>cancelled</code>, <code>completed</code>.</td>
+            </tr>
+            <tr>
+                <td><code>vehicle_plate</code></td>
+                <td><code>varchar(20)</code></td>
+                <td>Not Null</td>
+                <td>Licensed vehicle number plate.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Table: <code>credit_transactions</code></h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Column Name</th>
+                <th style="width: 25%;">Data Type</th>
+                <th style="width: 20%;">Constraints / Keys</th>
+                <th style="width: 30%;">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>id</code></td>
+                <td><code>char(36)</code> (UUID)</td>
+                <td>Primary Key</td>
+                <td>Unique transaction identifier.</td>
+            </tr>
+            <tr>
+                <td><code>user_id</code></td>
+                <td><code>char(36)</code></td>
+                <td>Foreign Key, Index</td>
+                <td>Links to <code>users.id</code>.</td>
+            </tr>
+            <tr>
+                <td><code>amount</code></td>
+                <td><code>int</code></td>
+                <td>Not Null</td>
+                <td>Balance change (positive = top-up, negative = deduction).</td>
+            </tr>
+            <tr>
+                <td><code>type</code></td>
+                <td><code>varchar(50)</code></td>
+                <td>Not Null</td>
+                <td>Transaction type (grant, deduction, refund).</td>
+            </tr>
+            <tr>
+                <td><code>description</code></td>
+                <td><code>varchar(255)</code></td>
+                <td>Nullable</td>
+                <td>Details describing the transaction.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- SECTION 7 -->
+    <h1>7. End-to-End Data &amp; Transactional Flow</h1>
+    <p>
+        This section traces the transactional steps of two critical system operations.
+    </p>
+
+    <h2>7.1 Dynamic Booking and Transactional Balance Deduction</h2>
+    <p>
+        When a user books a spot, the system uses a database transaction to lock rows and ensure wallet updates are atomic.
+    </p>
+    <pre>DB::transaction(function() use ($request, $user) {
+    // 1. Fetch and lock slot row to prevent concurrent bookings
+    $slot = ParkingSlot::lockForUpdate()->findOrFail($request->slot_id);
+    
+    if ($slot->status !== 'available') {
+        throw new SlotOccupiedException("Selected slot is no longer available.");
+    }
+    
+    // 2. Compute dynamic cost
+    $cost = PricingEngine::calculate($slot->lot_id, $request->start, $request->end);
+    
+    // 3. Verify user wallet balance
+    if ($user->credits_balance &lt; $cost) {
+        throw new InsufficientBalanceException("Insufficient credits in wallet.");
+    }
+    
+    // 4. Deduct balance atomically
+    $user->decrement('credits_balance', $cost);
+    
+    // 5. Create the booking record
+    $booking = Booking::create([
+        'user_id' => $user->id,
+        'slot_id' => $slot->id,
+        'start_time' => $request->start,
+        'end_time' => $request->end,
+        'vehicle_plate' => $request->plate,
+        'status' => 'confirmed'
+    ]);
+    
+    // 6. Log the financial ledger transaction
+    CreditTransaction::create([
+        'user_id' => $user->id,
+        'booking_id' => $booking->id,
+        'amount' => -$cost,
+        'type' => 'deduction',
+        'description' => "Booking charge for Slot: {$slot->slot_number}"
+    ]);
+    
+    // 7. Update slot availability status
+    $slot->update(['status' => 'reserved']);
+});</pre>
+
+    <h2>7.2 Automatic ANPR Gate Entry Webhook Integration</h2>
+    <p>
+        The system supports automated gate check-ins. When a camera detects a vehicle's license plate, it calls the hardware webhook:
+    </p>
+    <pre>POST /api/webhooks/hardware/anpr
+{ "plate": "MH12AB1234", "timestamp": "2026-05-18T10:00:00Z" }</pre>
+    <p>
+        The backend processes the webhook as follows:
+    </p>
+    <ol>
+        <li>Searches for active, confirmed bookings matching the detected vehicle plate number:
+            <code>Booking::where('vehicle_plate', $plate)->where('status', 'confirmed')->first();</code>
+        </li>
+        <li>If a matching booking is found, the system:
+            <ul>
+                <li>Updates the booking check-in time: <code>$booking->update(['checked_in_at' => now()]);</code></li>
+                <li>Updates the physical slot status to occupied: <code>$booking->slot->update(['status' => 'occupied']);</code></li>
+                <li>Sends a push notification or SMS alert confirming check-in.</li>
+                <li>Triggers the barrier gate open command via HTTP response.</li>
+            </ul>
+        </li>
+        <li>If no matching booking is found, the gate remains closed and a log is written.</li>
+    </ol>
+
+    <div class="page-break"></div>
+
+    <!-- SECTION 8 -->
+    <h1>8. System Security, Validation &amp; Auth Core</h1>
+    <p>
+        ParkHub implements multiple security layers to protect the system and ensure reliable data input validation.
+    </p>
+
+    <h2>8.1 Authentication Framework</h2>
+    <ul>
+        <li><strong>Laravel Sanctum</strong>: Provides secure session token and stateful cookie management, preventing unauthorized API requests.</li>
+        <li><strong>Bcrypt Hashing</strong>: Passwords are encrypted before database insertion, using a work factor of 12 for strong protection.</li>
+        <li><strong>Middleware Gateways</strong>: Restricts access to administrative endpoints using role-based routing middleware.</li>
+    </ul>
+
+    <h2>8.2 Input Payload Validation Matrix</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">API Endpoint</th>
+                <th style="width: 35%;">Validation Guardrails (FormRequest)</th>
+                <th style="width: 40%;">Architectural Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>/api/register</code></td>
+                <td>
+                    <code>'name' =&gt; 'required|string|max:255'</code><br>
+                    <code>'email' =&gt; 'required|email|unique:users'</code><br>
+                    <code>'password' =&gt; 'required|min:8|confirmed'</code>
+                </td>
+                <td>Validates new user profiles and email uniqueness, preventing duplicate accounts.</td>
+            </tr>
+            <tr>
+                <td><code>/api/bookings</code></td>
+                <td>
+                    <code>'slot_id' =&gt; 'required|exists:slots,id'</code><br>
+                    <code>'start_time' =&gt; 'required|date|after:now'</code><br>
+                    <code>'vehicle_plate' =&gt; 'regex:/^[A-Z]{2}\d{2}[A-Z]{1,2}\d{4}$/'</code>
+                </td>
+                <td>Validates the slot ID and ensures the license plate matches standard Indian vehicle formats (e.g. MH12AB1234).</td>
+            </tr>
+            <tr>
+                <td><code>/api/user/wallet/add</code></td>
+                <td>
+                    <code>'amount' =&gt; 'required|integer|min:100|max:10000'</code>
+                </td>
+                <td>Enforces minimum (₹100) and maximum (₹10,000) limits for digital wallet top-ups.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- SECTION 9 -->
+    <h1>9. Visual Interface Showcase (Live System Screenshots)</h1>
+    <p>
+        The following screenshots showcase the live, running web client interface under the user account <code>dhirendrahudda@gmail.com</code>:
+    </p>
+
+    <div class="screenshot-container">
+        <img src="images/map_view.png" class="screenshot-img" alt="Map View Screenshot" onerror="this.style.display='none'; document.getElementById('map-placeholder').style.display='block';">
+        <div id="map-placeholder" style="display:none; width: 95%; height: 5cm; border: 2px dashed #cbd5e1; border-radius: 4px; background-color: #f8fafc; margin: 0 auto; text-align: center; padding-top: 2cm;">
+            <strong style="color: #0d9488; font-size: 11pt;">[ MAP DISCOVERY INTERFACE SCREENSHOT ]</strong><br>
+            <span style="color: #64748b; font-size: 8pt;">Capture the map view with Leaflet pins showing spot statuses and save as: <code>documentation/images/map_view.png</code></span>
+        </div>
+        <div class="screenshot-caption">Figure 9.1: Geolocation interactive map showing custom-colored lot availability pins in metro regions.</div>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="images/bookings_list.png" class="screenshot-img" alt="Bookings History Screenshot" onerror="this.style.display='none'; document.getElementById('bookings-placeholder').style.display='block';">
+        <div id="bookings-placeholder" style="display:none; width: 95%; height: 5cm; border: 2px dashed #cbd5e1; border-radius: 4px; background-color: #f8fafc; margin: 0 auto; text-align: center; padding-top: 2cm;">
+            <strong style="color: #0d9488; font-size: 11pt;">[ BOOKING HISTORY SCREENSHOT ]</strong><br>
+            <span style="color: #64748b; font-size: 8pt;">Capture the user dashboard displaying their 10 bookings list and save as: <code>documentation/images/bookings_list.png</code></span>
+        </div>
+        <div class="screenshot-caption">Figure 9.2: Booking history dashboard containing active, upcoming, and past check-in transactions.</div>
+    </div>
+
+    <div class="screenshot-container">
+        <img src="images/wallet_dashboard.png" class="screenshot-img" alt="Wallet Dashboard Screenshot" onerror="this.style.display='none'; document.getElementById('wallet-placeholder').style.display='block';">
+        <div id="wallet-placeholder" style="display:none; width: 95%; height: 5cm; border: 2px dashed #cbd5e1; border-radius: 4px; background-color: #f8fafc; margin: 0 auto; text-align: center; padding-top: 2cm;">
+            <strong style="color: #0d9488; font-size: 11pt;">[ DIGITAL WALLET DASHBOARD ]</strong><br>
+            <span style="color: #64748b; font-size: 8pt;">Capture the wallet page showing transactions ledger and save as: <code>documentation/images/wallet_dashboard.png</code></span>
+        </div>
+        <div class="screenshot-caption">Figure 9.3: Glassmorphic prepaid transaction ledger panel showing top-ups and reservation deductions.</div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECTION 10 -->
+    <h1>10. Local XAMPP Environment Bootstrapping Guide</h1>
+    <p>
+        To run ParkHub locally in a Windows development environment using XAMPP:
+    </p>
+    <ol>
+        <li>Open the <strong>XAMPP Control Panel</strong> and start both <strong>Apache</strong> and <strong>MySQL</strong>.</li>
+        <li>Open **phpMyAdmin** in your browser at <code>http://localhost/phpmyadmin</code>.</li>
+        <li>Create a new empty database named <code>parkindia</code> with the collation set to <code>utf8mb4_unicode_ci</code>.</li>
+        <li>Create a <code>.env</code> configuration file in the project root directory and update the database settings:
+            <pre>DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=parkindia
+DB_USERNAME=root
+DB_PASSWORD=</pre>
+        </li>
+        <li>Install PHP dependencies and run the database migrations and seeders:
+            <pre>composer install
+php artisan migrate:fresh --seed --class=IndianParkingLotsSeeder</pre>
+        </li>
+        <li>Start the Laravel API backend server:
+            <pre>php artisan serve</pre>
+        </li>
+        <li>Navigate to the frontend directory, install npm dependencies, and start the React dev server:
+            <pre>cd parkhub-web
+npm install
+npm run dev</pre>
+        </li>
+        <li>Open your browser and navigate to <code>http://localhost:4321</code> to access the application.</li>
+    </ol>
+
+    <!-- SECTION 11 -->
+    <h1>11. Future Scalability &amp; Hardware Integration Road Map</h1>
+    <p>
+        To scale ParkHub for higher transaction volumes and integrate physical hardware, we recommend the following roadmap:
+    </p>
+
+    <h2>11.1 Database Performance Optimization</h2>
+    <ul>
+        <li><strong>Read-Write Splitting</strong>: Set up database replicas where write operations go to a master node, and heavy administrative dashboard read queries are distributed to read replica nodes.</li>
+        <li><strong>Database Partitioning</strong>: Partition the <code>bookings</code> table by range based on the <code>start_time</code> column. This keeps query times fast even as the table grows to millions of records.</li>
+    </ul>
+
+    <h2>11.2 Queue Management</h2>
+    <p>
+        Offload long-running tasks, such as generating invoice PDFs and sending email receipts, from the request-response cycle to background workers using Laravel Queues with Redis:
+    </p>
+    <pre>dispatch(new GenerateInvoicePdfJob($booking));</pre>
+
+    <h2>11.3 Smart City Integration (Physical ANPR Cameras)</h2>
+    <p>
+        Replace simulated hardware webhook inputs with physical ANPR cameras deployed at parking entry and exit gates. A production-grade ANPR gateway can handle high-performance license plate recognition and control barrier gates in real time:
+    </p>
+
+    <div class="diagram-box">
+  +------------------+                    +--------------------+
+  |  Incoming Car    |                    |  ANPR Camera Unit  |
+  |  at Entry Gate   | ==(Scans Plate)===>|  (Reads Plate)     |
+  +------------------+                    +--------------------+
+                                                    ||
+                                                    || (POST API Webhook)
+                                                    \/
+  +------------------+                    +--------------------+
+  | Physical Gate    |                    | ParkHub Backend    |
+  | Barrier Opens    |&lt;===(HTTP Response)=| (Matches Booking   |
+  |                  |    Trigger Open    |  &amp; Wallet Balance) |
+  +------------------+                    +--------------------+
+    </div>
+
+    <h2>11.4 High Availability API Servers</h2>
+    <p>
+        Deploy the Laravel API behind a load balancer (such as HAProxy or AWS Application Load Balancer) with Laravel Octane running on Swoole or RoadRunner. This configuration allows the backend to handle thousands of requests per second with low latency.
+    </p>
+
+    <hr style="border: 0; border-top: 1px solid #cbd5e1; margin-top: 30px; margin-bottom: 10px;">
+    <p style="text-align: center; color: #64748b; font-size: 7.5pt; margin: 0;">
+        Master Technical Document — ParkHub (ParkIndia) Projects Core. Created in Pair Programming Partnership, 2026.
+    </p>
+
+</body>
+</html>

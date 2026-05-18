@@ -1,0 +1,24 @@
+PARKHUB PDF DOCUMENTATION SCREENSHOT UTILITY
+===========================================
+
+Because the local Playwright node drivers on this host encountered a Win32 system driver issue, you can manually capture screenshots of your running application and easily embed them into the final compiled PDF!
+
+HOW TO EMBED YOUR SCREENSHOTS:
+-----------------------------
+1. Start your local application servers:
+   - Run `php artisan serve` (running at http://localhost:8000)
+   - Run `npm run dev --prefix parkhub-web` (running at http://localhost:4321)
+
+2. Open http://localhost:4321 in your browser (Google Chrome, Microsoft Edge, etc.) and log in:
+   - Email: dhirendrahudda@gmail.com
+   - Password: demo@123
+
+3. Capture high-quality screenshots using Windows Snipping Tool (Win + Shift + S) or browser print screen, and save them in this folder with the EXACT names:
+   - map_view.png        --> Save a screenshot of the main map discovery screen.
+   - bookings_list.png   --> Save a screenshot of the Booking History screen (showing Dhirendra's bookings).
+   - wallet_dashboard.png --> Save a screenshot of the Digital Wallet page.
+
+4. Once the images are saved in this folder, run the automated PDF compiler command:
+   - Run `php documentation/generate_docs.php`
+
+5. Dompdf will automatically load these images from this directory and embed them directly into the compiled professional PDF!

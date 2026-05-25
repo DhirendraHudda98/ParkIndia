@@ -40,14 +40,7 @@ vi.mock("react-router-dom", () => ({
   useLocation: () => mockLocation,
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  WifiSlash: (props) => <span data-testid="icon-wifi-slash" {...props} />,
-  ArrowDown: (props) => <span data-testid="icon-arrow-down" {...props} />,
-  House: (props) => <span data-testid="icon-house" {...props} />,
-  CalendarBlank: (props) => <span data-testid="icon-calendar" {...props} />,
-  Car: (props) => <span data-testid="icon-car" {...props} />,
-  User: (props) => <span data-testid="icon-user" {...props} />,
-}));
+
 
 import {
   OfflineIndicator,

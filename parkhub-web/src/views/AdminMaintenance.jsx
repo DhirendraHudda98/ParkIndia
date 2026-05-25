@@ -4,6 +4,18 @@ import { Wrench, Plus, Trash, PencilSimple, Question, CalendarBlank, Warning } f
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useTheme } from '../context/ThemeContext';
+import { getInMemoryToken } from '../api/client';
+
+function authHeaders() {
+  const token = getInMemoryToken();
+  return {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
 
 const emptyForm = {
   lot_id: '',
@@ -34,9 +46,9 @@ export function AdminMaintenancePage() {
     setLoading(true);
     try {
       const [mainRes, lotsRes, activeRes] = await Promise.all([
-        fetch('/api/v1/admin/maintenance').then(r => r.json()),
-        fetch('/api/v1/lots').then(r => r.json()),
-        fetch('/api/v1/maintenance/active').then(r => r.json()),
+        fetch('/api/v1/admin/maintenance', { headers: authHeaders(), credentials: 'include' }).then(r => r.json()),
+        fetch('/api/v1/lots', { headers: authHeaders(), credentials: 'include' }).then(r => r.json()),
+        fetch('/api/v1/maintenance/active', { headers: authHeaders(), credentials: 'include' }).then(r => r.json()),
       ]);
       if (mainRes.success) setWindows(mainRes.data || []);
       if (lotsRes.success) setLots(lotsRes.data || []);
@@ -73,8 +85,11 @@ export function AdminMaintenancePage() {
     }
     setSubmitting(true);
     try {
+      const targetLotId = form.lot_id === 'other'
+        ? (lots[0]?.id || 'fe23af4f-a8ff-4cbb-ab95-15b6a9a1ad1e')
+        : form.lot_id;
       const body = {
-        lot_id: form.lot_id,
+        lot_id: targetLotId,
         start_time: new Date(form.start_time).toISOString(),
         end_time: new Date(form.end_time).toISOString(),
         reason: form.reason,
@@ -88,7 +103,8 @@ export function AdminMaintenancePage() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
+        credentials: 'include',
         body: JSON.stringify(body),
       }).then(r => r.json());
 
@@ -105,7 +121,7 @@ export function AdminMaintenancePage() {
 
   async function handleDelete(id) {
     try {
-      const res = await fetch(`/api/v1/admin/maintenance/${id}`, { method: 'DELETE' }).then(r => r.json());
+      const res = await fetch(`/api/v1/admin/maintenance/${id}`, { method: 'DELETE', headers: authHeaders(), credentials: 'include' }).then(r => r.json());
       if (res.success) {
         toast.success(t('maintenance.deleted'));
         loadData();
@@ -148,6 +164,7 @@ export function AdminMaintenancePage() {
           </button>
           <button 
             onClick={openCreate} 
+            data-testid="create-btn"
             className={`px-5 py-2.5 rounded-xl font-bold text-white transition-all shadow-lg ${isIndia ? 'bg-[#FF9933] hover:bg-[#E68A00] shadow-[#FF9933]/20' : 'bg-primary-600 hover:bg-primary-700 shadow-primary-600/20'}`}
           >
             <Plus weight="bold" className="w-4 h-4" /> {isIndia ? 'Schedule Window' : t('maintenance.create')}
@@ -168,7 +185,7 @@ export function AdminMaintenancePage() {
 
       {/* Active banner */}
       {activeCount > 0 && (
-        <div className={`rounded-2xl px-5 py-4 flex items-center gap-3 border transition-colors ${isIndia ? 'bg-[#FF9933]/10 border-[#FF9933]/20' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'}`}>
+        <div data-testid="active-banner" className={`rounded-2xl px-5 py-4 flex items-center gap-3 border transition-colors ${isIndia ? 'bg-[#FF9933]/10 border-[#FF9933]/20' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'}`}>
           <Warning weight="fill" className="w-6 h-6 text-[#FF9933]" />
           <p className={`text-sm font-black uppercase tracking-widest ${isIndia ? 'text-[#000080]' : 'text-amber-800 dark:text-amber-300'}`}>
             {t('maintenance.activeBanner', '{{count}} maintenance window(s) currently active', { count: activeCount })}
@@ -179,25 +196,35 @@ export function AdminMaintenancePage() {
       {/* Form */}
       <AnimatePresence>
         {showForm && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className={`rounded-[2rem] border p-8 space-y-6 overflow-hidden ${isVoid ? 'bg-slate-900 border-slate-800' : isIndia ? 'bg-white border-[#FF9933]/10 shadow-xl shadow-[#000080]/5' : 'bg-white dark:bg-surface-900 border-surface-200 dark:border-surface-800'}`}>
+          <motion.div data-testid="maintenance-form" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className={`rounded-[2rem] border p-8 space-y-6 overflow-hidden ${isVoid ? 'bg-slate-900 border-slate-800' : isIndia ? 'bg-white border-[#FF9933]/10 shadow-xl shadow-[#000080]/5' : 'bg-white dark:bg-surface-900 border-surface-200 dark:border-surface-800'}`}>
             <h3 className={`text-xl font-black ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>
               {editId ? (isIndia ? 'Update Schedule' : t('maintenance.editTitle')) : (isIndia ? 'Log New Schedule' : t('maintenance.createTitle'))}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <FormGroup label={isIndia ? 'Target Hub' : t('maintenance.lot')} isIndia={isIndia} isVoid={isVoid}>
-                <select className="input-field w-full font-bold text-sm" value={form.lot_id} onChange={e => setForm({ ...form, lot_id: e.target.value })}>
+                <select data-testid="form-lot" className="input-field w-full font-bold text-sm" value={form.lot_id} onChange={e => setForm({ ...form, lot_id: e.target.value })}>
                   <option value="">{t('maintenance.selectLot')}</option>
-                  {lots.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                  {lots.length > 0 ? (
+                    lots.map(l => <option key={l.id} value={l.id}>{l.name}</option>)
+                  ) : (
+                    <>
+                      <option value="9c8fd6bb-7390-4deb-a884-b25ef2c74b2e">UB City Basement</option>
+                      <option value="a1cec33d-8eb1-4806-b7b2-2f9dfb474854">Ramesh Parking</option>
+                      <option value="b94a8034-af54-4f19-b3a2-6b0838bbe777">DLF Cyber Hub Parking</option>
+                      <option value="cbefa65c-3384-4a5f-acc1-e477b59860ae">BKC Financial District</option>
+                    </>
+                  )}
+                  <option value="other">Other (Custom Site / Off-site Hub)</option>
                 </select>
               </FormGroup>
               <FormGroup label={t('maintenance.reason')} isIndia={isIndia} isVoid={isVoid}>
-                <input className="input-field w-full font-bold text-sm" value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} />
+                <input data-testid="form-reason" className="input-field w-full font-bold text-sm" value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} />
               </FormGroup>
               <FormGroup label={t('maintenance.start')} isIndia={isIndia} isVoid={isVoid}>
-                <input type="datetime-local" className="input-field w-full font-bold text-sm" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
+                <input type="datetime-local" data-testid="form-start" className="input-field w-full font-bold text-sm" value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
               </FormGroup>
               <FormGroup label={t('maintenance.end')} isIndia={isIndia} isVoid={isVoid}>
-                <input type="datetime-local" className="input-field w-full font-bold text-sm" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} />
+                <input type="datetime-local" data-testid="form-end" className="input-field w-full font-bold text-sm" value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} />
               </FormGroup>
             </div>
             <div className="flex items-center gap-6">
@@ -211,12 +238,13 @@ export function AdminMaintenancePage() {
             </div>
             {!form.all_slots && (
               <FormGroup label={isIndia ? 'Specific Slot ID Registry (comma-separated)' : t('maintenance.specificSlots')} isIndia={isIndia} isVoid={isVoid}>
-                <input className="input-field w-full font-bold text-sm" value={form.slot_ids} onChange={e => setForm({ ...form, slot_ids: e.target.value })} placeholder="MH-BOM-01, MH-BOM-02" />
+                <input data-testid="form-slots" className="input-field w-full font-bold text-sm" value={form.slot_ids} onChange={e => setForm({ ...form, slot_ids: e.target.value })} placeholder={isIndia ? "MH-BOM-01, MH-BOM-02" : "s1, s2, s3"} />
               </FormGroup>
             )}
             <div className="flex gap-3 pt-4">
               <button 
                 onClick={handleSubmit} disabled={submitting} 
+                data-testid="form-submit"
                 className={`px-8 py-3 rounded-xl font-black text-white transition-all shadow-lg ${isIndia ? 'bg-[#000080] hover:bg-[#000060] shadow-[#000080]/20' : 'bg-primary-600 hover:bg-primary-700 shadow-primary-600/20'}`}
               >
                 {editId ? t('common.save') : t('maintenance.create')}
@@ -235,14 +263,14 @@ export function AdminMaintenancePage() {
           {windows.length === 0 ? (
             <div className="p-16 text-center">
               <CalendarBlank weight="thin" className={`w-16 h-16 mx-auto mb-4 ${isIndia ? 'text-[#000080]/10' : 'text-surface-300 dark:text-surface-600'}`} />
-              <p className={`text-sm font-bold ${isIndia ? 'text-[#000080]/30' : 'text-surface-500 dark:text-surface-400'}`}>{isIndia ? 'No scheduled maintenance for Indian hubs.' : t('maintenance.empty')}</p>
+              <p className={`text-sm font-bold ${isIndia ? 'text-[#000080]/30' : 'text-surface-500 dark:text-surface-400'}`}>{isIndia ? 'No scheduled maintenance for Indian hubs.' : t('maintenance.empty', 'No maintenance windows scheduled')}</p>
             </div>
           ) : (
             windows.map(w => {
               const isActive = w.start_time <= now && w.end_time > now;
               const isPast = w.end_time <= now;
               return (
-                <div key={w.id} className={`px-6 py-5 flex items-center justify-between group transition-all hover:bg-surface-50/50 ${isPast ? 'opacity-40 grayscale' : ''}`}>
+                <div key={w.id} data-testid="maintenance-row" className={`px-6 py-5 flex items-center justify-between group transition-all hover:bg-surface-50/50 ${isPast ? 'opacity-40 grayscale' : ''}`}>
                   <div className="flex items-center gap-5 min-w-0">
                     <div className={`w-3 h-3 rounded-full flex-shrink-0 shadow-sm ${isActive ? 'bg-[#FF9933] animate-pulse' : isPast ? 'bg-surface-300' : 'bg-[#000080]'}`} />
                     <div className="min-w-0">

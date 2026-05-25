@@ -17,13 +17,7 @@ vi.mock('framer-motion', () => ({
         div: React.forwardRef(({ children, initial, animate, exit, transition, ...props }, ref) => (<div ref={ref} {...props}>{children}</div>)),
     },
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    Users: (props) => <span data-testid="icon-users" {...props}/>,
-    Buildings: (props) => <span data-testid="icon-buildings" {...props}/>,
-    CalendarCheck: (props) => <span data-testid="icon-calendar" {...props}/>,
-    Lightning: (props) => <span data-testid="icon-lightning" {...props}/>,
-}));
+
 vi.mock('../components/SimpleChart', () => ({
     BarChart: ({ data }) => <div data-testid="bar-chart">{data?.length} bars</div>,
     DonutChart: ({ slices }) => <div data-testid="donut-chart">{slices?.length} slices</div>,

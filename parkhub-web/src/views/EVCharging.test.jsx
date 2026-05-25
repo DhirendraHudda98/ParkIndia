@@ -38,14 +38,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Lightning: (props) => <span data-testid="icon-lightning" {...props}/>,
-    Play: (props) => <span data-testid="icon-play" {...props}/>,
-    Stop: (props) => <span data-testid="icon-stop" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    BatteryCharging: (props) => <span data-testid="icon-battery" {...props}/>,
-}));
+
 vi.mock('../context/AuthContext', () => ({
     useAuth: () => ({ user: { id: 'user-1', role: 'admin' } }),
 }));

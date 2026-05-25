@@ -1,12 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 
-vi.mock("@phosphor-icons/react", () => ({
-  House: "House",
-  Airplane: "Airplane",
-  FirstAidKit: "FirstAidKit",
-  Briefcase: "Briefcase",
-  NoteBlank: "NoteBlank",
-}));
+
 
 import { ABSENCE_CONFIG } from "./absenceConfig";
 

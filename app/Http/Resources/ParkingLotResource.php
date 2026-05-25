@@ -36,6 +36,7 @@ class ParkingLotResource extends JsonResource
             'pincode' => $this->pincode,
             'total_slots' => (int) $this->total_slots,
             'available_slots' => (int) $this->available_slots,
+            'available_spots' => (int) $this->available_slots,
             'demand_level' => $demandLevel,
             'distance' => $this->distance ?? null, // Calculated in controller if lat/lng provided
             'layout' => $this->layout,

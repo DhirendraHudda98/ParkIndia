@@ -51,21 +51,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children, mode }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Buildings: (props) => <span data-testid="icon-buildings" {...props}/>,
-    House: (props) => <span data-testid="icon-house" {...props}/>,
-    UsersThree: (props) => <span data-testid="icon-users" {...props}/>,
-    Car: (props) => <span data-testid="icon-car" {...props}/>,
-    ArrowRight: (props) => <span data-testid="icon-right" {...props}/>,
-    ArrowLeft: (props) => <span data-testid="icon-left" {...props}/>,
-    Check: (props) => <span data-testid="icon-check" {...props}/>,
-    SunDim: (props) => <span data-testid="icon-sun" {...props}/>,
-    Moon: (props) => <span data-testid="icon-moon" {...props}/>,
-    ToggleLeft: (props) => <span data-testid="toggle-off" {...props}/>,
-    ToggleRight: (props) => <span data-testid="toggle-on" {...props}/>,
-    Info: (props) => <span data-testid="icon-info" {...props}/>,
-    ShieldCheck: (props) => <span data-testid="icon-shield" {...props}/>,
-}));
+
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key) => {

@@ -57,17 +57,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    CarSimple: (props) => <span data-testid="icon-car" {...props}/>,
-    Eye: (props) => <span data-testid="icon-eye" {...props}/>,
-    EyeSlash: (props) => <span data-testid="icon-eye-slash" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    ArrowLeft: (props) => <span data-testid="icon-arrow-left" {...props}/>,
-    Info: (props) => <span data-testid="icon-info" {...props}/>,
-    ShieldCheck: (props) => <span data-testid="icon-shield" {...props}/>,
-    Lightning: (props) => <span data-testid="icon-lightning" {...props}/>,
-    Globe: (props) => <span data-testid="icon-globe" {...props}/>,
-}));
+
 import { LoginPage } from './Login';
 describe('LoginPage', () => {
     beforeEach(() => {

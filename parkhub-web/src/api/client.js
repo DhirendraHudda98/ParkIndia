@@ -1,7 +1,15 @@
 const BASE_URL = import.meta.env.VITE_API_URL || '';
 
-// In-memory token storage (XSS-safe: not in localStorage).
+// In-memory token storage.
 let _inMemoryToken = null;
+
+// Initialize token from localStorage on page load
+if (typeof window !== 'undefined') {
+  const stored = localStorage.getItem('parkhub_access_token');
+  if (stored) {
+    _inMemoryToken = stored;
+  }
+}
 
 export function setInMemoryToken(token) {
   _inMemoryToken = token;
@@ -453,7 +461,17 @@ export const api = {
   
   adminBulkDelete: (user_ids) => request('/api/v1/admin/users/bulk-delete', { method: 'POST', body: JSON.stringify({ user_ids }) }),
 
-  getMapMarkers: () => request('/api/v1/lots/map'),
+  getParkingLots: (params = {}) => {
+    const query = new URLSearchParams();
+    if (params.city) query.set('city', params.city);
+    return request(`/api/parking-lots${query.toString() ? `?${query.toString()}` : ''}`);
+  },
+
+  getMapMarkers: (params = {}) => {
+    const query = new URLSearchParams();
+    if (params.city) query.set('city', params.city);
+    return request(`/api/parking-lots${query.toString() ? `?${query.toString()}` : ''}`);
+  },
   
   setLotLocation: (lotId, latitude, longitude) =>
     request(`/api/v1/admin/lots/${lotId}/location`, { method: 'PUT', body: JSON.stringify({ latitude, longitude }) }),

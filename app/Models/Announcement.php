@@ -11,12 +11,13 @@ class Announcement extends Model
 {
     use HasUuids;
 
-    protected $fillable = ['title', 'message', 'severity', 'active', 'created_by', 'expires_at'];
+    protected $fillable = ['title', 'message', 'severity', 'active', 'created_by', 'starts_at', 'priority', 'expires_at'];
 
     protected function casts(): array
     {
         return [
             'active' => 'boolean',
+            'starts_at' => 'datetime',
             'expires_at' => 'datetime',
         ];
     }

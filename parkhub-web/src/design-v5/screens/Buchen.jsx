@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge, Card, SectionLabel, V5NamedIcon } from '../primitives';
 import { useV5Toast } from '../Toast';
 import { api, } from '../../api/client';
+import { Star } from '@phosphor-icons/react';
 import { readLastUsed, writeLastUsed } from '../lastUsed';
 import ParkingMap from '../../components/ParkingMap';
 const DURATIONS = [
@@ -72,6 +73,8 @@ export function BuchenV5({ navigate }) {
     const [selectedVehicle, setSelectedVehicle] = useState(() => readLastUsed('buchen:vehicle') ?? '');
     const [startDate, setStartDate] = useState(defaultStart);
     const [duration, setDuration] = useState(2);
+    const [favoritesSet, setFavoritesSet] = useState(new Set());
+    const [favPending, setFavPending] = useState(new Set());
     const { data: lotsResp, isLoading: lotsLoading, isError: lotsError, } = useQuery({
         queryKey: ['buchen-lots'],
         queryFn: async () => {
@@ -128,6 +131,32 @@ export function BuchenV5({ navigate }) {
         staleTime: 15_000,
     });
     const slots = slotsResp ?? [];
+
+    useEffect(() => {
+      let mounted = true;
+      if (!selectedLot) return undefined;
+      api.getFavorites().then((res) => {
+        if (!mounted) return;
+        if (res.success && res.data) setFavoritesSet(new Set(res.data.map(f => f.slot_id)));
+      }).catch(() => {});
+      return () => { mounted = false; };
+    }, [selectedLot?.id]);
+
+    async function toggleFavorite(slot) {
+      const slotId = slot.id;
+      if (favPending.has(slotId)) return;
+      setFavPending(p => new Set(p).add(slotId));
+      if (favoritesSet.has(slotId)) {
+        const res = await api.removeFavorite(slotId);
+        if (res.success) setFavoritesSet(p => { const n = new Set(p); n.delete(slotId); return n; });
+        else toast('Remove failed', 'error');
+      } else {
+        const res = await api.addFavorite(slotId, selectedLot?.id || slot.lot_id);
+        if (res.success) setFavoritesSet(p => new Set(p).add(slotId));
+        else toast('Add failed', 'error');
+      }
+      setFavPending(p => { const n = new Set(p); n.delete(slotId); return n; });
+    }
     
     // Subscribe to real-time slot updates
     useEffect(() => {
@@ -301,7 +330,7 @@ export function BuchenV5({ navigate }) {
              <StepLot lots={lots} onSelect={handleSelectLot} t={t}/>
           </div>
       )}
-      {step === 2 && selectedLot && (<StepSlot lot={selectedLot} slots={slots} loading={slotsLoading} selectedSlot={selectedSlot} onSelectSlot={setSelectedSlot} startDate={startDate} onStartDateChange={setStartDate} duration={duration} onDurationChange={setDuration} vehicles={vehicles} selectedVehicle={selectedVehicle} onVehicleChange={setSelectedVehicle} onContinue={() => selectedSlot && setStep(3)} currency={currency} estimated={estimated} t={t}/>)}
+      {step === 2 && selectedLot && (<StepSlot lot={selectedLot} slots={slots} loading={slotsLoading} selectedSlot={selectedSlot} onSelectSlot={setSelectedSlot} startDate={startDate} onStartDateChange={setStartDate} duration={duration} onDurationChange={setDuration} vehicles={vehicles} selectedVehicle={selectedVehicle} onVehicleChange={setSelectedVehicle} onContinue={() => selectedSlot && setStep(3)} currency={currency} estimated={estimated} t={t} favoritesSet={favoritesSet} favPending={favPending} toggleFavorite={toggleFavorite}/>)}
       {step === 3 && selectedLot && selectedSlot && (<StepConfirm lot={selectedLot} slot={selectedSlot} start={start} end={end} duration={duration} estimated={estimated} currency={currency} vehicle={vehicles.find((v) => v.id === selectedVehicle)} submitting={createMutation.isPending} onConfirm={handleConfirm} t={t}/>)}
     </div>);
 }
@@ -377,7 +406,7 @@ function StepLot({ lots, onSelect, t }) {
         })}
     </div>);
 }
-function StepSlot({ lot, slots, loading, selectedSlot, onSelectSlot, startDate, onStartDateChange, duration, onDurationChange, vehicles, selectedVehicle, onVehicleChange, onContinue, currency, estimated, t }) {
+function StepSlot({ lot, slots, loading, selectedSlot, onSelectSlot, startDate, onStartDateChange, duration, onDurationChange, vehicles, selectedVehicle, onVehicleChange, onContinue, currency, estimated, t, favoritesSet, favPending, toggleFavorite }) {
     const available = slots.filter((s) => s.status === 'available');
     return (<div className="v5-ani" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: 12, animationDelay: '0.12s' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -434,8 +463,9 @@ function StepSlot({ lot, slots, loading, selectedSlot, onSelectSlot, startDate, 
               {slots.map((s) => {
                 const isAvail = s.status === 'available';
                 const isSelected = selectedSlot?.id === s.id;
-                return (<button key={s.id} type="button" disabled={!isAvail} aria-pressed={isSelected} aria-label={`Spot ${s.slot_number}${isAvail ? '' : ' (taken)'}`} onClick={() => isAvail && onSelectSlot(s)} data-testid="buchen-slot" style={{
+              return (<button key={s.id} type="button" disabled={!isAvail} aria-pressed={isSelected} aria-label={`Spot ${s.slot_number}${isAvail ? '' : ' (taken)'}`} onClick={() => isAvail && onSelectSlot(s)} data-testid="buchen-slot" style={{
                         padding: '10px 0',
+                position: 'relative',
                         borderRadius: 8,
                         fontSize: 12,
                         fontWeight: 600,
@@ -446,7 +476,10 @@ function StepSlot({ lot, slots, loading, selectedSlot, onSelectSlot, startDate, 
                         opacity: isAvail ? 1 : 0.55,
                         transition: 'all 0.12s',
                     }}>
-                    {s.slot_number}
+                      {s.slot_number}
+                      <button type="button" onClick={(e) => { e.stopPropagation(); toggleFavorite(s); }} disabled={favPending.has(s.id)} style={{ position: 'absolute', left: 6, top: 6, padding: 6, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer' }} aria-label={favoritesSet.has(s.id) ? `Remove ${s.slot_number} from favorites` : `Add ${s.slot_number} to favorites`}>
+                        <Star weight={favoritesSet.has(s.id) ? 'fill' : 'regular'} size={14} color={favoritesSet.has(s.id) ? '#f59e0b' : 'currentColor'} />
+                      </button>
                   </button>);
             })}
             </div>)}

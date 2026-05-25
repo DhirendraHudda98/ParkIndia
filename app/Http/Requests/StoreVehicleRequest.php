@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use App\Rules\IndianVehicleNumber;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreVehicleRequest extends FormRequest
 {
@@ -27,7 +28,15 @@ class StoreVehicleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'plate'      => ['required', 'string', 'max:20', new IndianVehicleNumber()],
+            'plate'      => [
+                'required',
+                'string',
+                'max:20',
+                new IndianVehicleNumber(),
+                Rule::unique('vehicles', 'plate')->where(function ($query) {
+                    return $query->where('user_id', $this->user()->id);
+                }),
+            ],
             'make'       => 'nullable|string|max:100',
             'model'      => 'nullable|string|max:100',
             'color'      => 'nullable|string|max:50',

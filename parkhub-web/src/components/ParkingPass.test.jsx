@@ -24,11 +24,7 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  X: (props) => <span data-testid="icon-x" {...props} />,
-  DownloadSimple: (props) => <span data-testid="icon-download" {...props} />,
-  Printer: (props) => <span data-testid="icon-printer" {...props} />,
-}));
+
 
 vi.mock("date-fns", () => ({
   format: (_date, fmt) => {
@@ -64,8 +60,8 @@ describe("ParkingPass", () => {
     // Mock fetch to return a blob
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      blob: () =>
-        Promise.resolve(new Blob(["png-data"], { type: "image/png" })),
+      json: () =>
+        Promise.resolve({ success: true, data: { qr_data: "blob:mock-qr-url" } }),
     });
     // Mock URL APIs
     globalThis.URL.createObjectURL = vi.fn(() => "blob:mock-qr-url");
@@ -121,7 +117,7 @@ describe("ParkingPass", () => {
   it("shows error when fetch fails", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
-      blob: () => Promise.reject(new Error("fail")),
+      json: () => Promise.reject(new Error("fail")),
     });
     render(<ParkingPass booking={mockBooking} onClose={mockOnClose} />);
     await waitFor(() => {

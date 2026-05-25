@@ -30,18 +30,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Translate: (props) => <span data-testid="icon-translate" {...props}/>,
-    MagnifyingGlass: (props) => <span data-testid="icon-search" {...props}/>,
-    ThumbsUp: (props) => <span data-testid="icon-thumbs-up" {...props}/>,
-    ThumbsDown: (props) => <span data-testid="icon-thumbs-down" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    PaperPlaneTilt: (props) => <span data-testid="icon-send" {...props}/>,
-    X: (props) => <span data-testid="icon-x" {...props}/>,
-    Check: (props) => <span data-testid="icon-check" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    ChatCircleDots: (props) => <span data-testid="icon-chat" {...props}/>,
-}));
+
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key, opts) => {

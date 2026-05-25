@@ -49,16 +49,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    UserPlus: (props) => <span data-testid="icon-user-plus" {...props}/>,
-    QrCode: (props) => <span data-testid="icon-qr" {...props}/>,
-    Trash: (props) => <span data-testid="icon-trash" {...props}/>,
-    CheckCircle: (props) => <span data-testid="icon-check" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-    MagnifyingGlass: (props) => <span data-testid="icon-search" {...props}/>,
-    CalendarBlank: (props) => <span data-testid="icon-calendar" {...props}/>,
-    Envelope: (props) => <span data-testid="icon-envelope" {...props}/>,
-}));
+
 vi.mock('../context/AuthContext', () => ({
     useAuth: () => ({
         user: { id: 'user-1', name: 'Test User', role: 'admin' },

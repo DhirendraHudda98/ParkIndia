@@ -33,14 +33,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Ticket: (props) => <span data-testid="icon-ticket" {...props}/>,
-    QrCode: (props) => <span data-testid="icon-qr" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    MapPin: (props) => <span data-testid="icon-map-pin" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-    CalendarBlank: (props) => <span data-testid="icon-calendar" {...props}/>,
-}));
+
 import { ParkingPassPage } from './ParkingPassView';
 const samplePasses = [
     {

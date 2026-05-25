@@ -47,16 +47,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    CarSimple: (props) => <span data-testid="icon-car" {...props}/>,
-    CalendarCheck: (props) => <span data-testid="icon-calendar" {...props}/>,
-    ChartLineUp: (props) => <span data-testid="icon-chart" {...props}/>,
-    Sparkle: (props) => <span data-testid="icon-sparkle" {...props}/>,
-    ArrowRight: (props) => <span data-testid="icon-arrow" {...props}/>,
-    Globe: (props) => <span data-testid="icon-globe" {...props}/>,
-    SunDim: (props) => <span data-testid="icon-sun" {...props}/>,
-    Moon: (props) => <span data-testid="icon-moon" {...props}/>,
-}));
+
 vi.mock('../i18n', () => ({
     languages: [
         { code: 'en', name: 'English', flag: '\u{1F1EC}\u{1F1E7}', native: 'English' },

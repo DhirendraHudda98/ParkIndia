@@ -37,12 +37,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    CarSimple: (props) => <span data-testid="icon-car" {...props}/>,
-    ArrowLeft: (props) => <span data-testid="icon-arrow-left" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    CheckCircle: (props) => <span data-testid="icon-check-circle" {...props}/>,
-}));
+
 import { ForgotPasswordPage } from './ForgotPassword';
 describe('ForgotPasswordPage', () => {
     beforeEach(() => {

@@ -58,17 +58,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    CaretLeft: (props) => <span data-testid="icon-caret-left" {...props}/>,
-    CaretRight: (props) => <span data-testid="icon-caret-right" {...props}/>,
-    CalendarBlank: (props) => <span data-testid="icon-calendar-blank" {...props}/>,
-    LinkSimple: (props) => <span data-testid="icon-link" {...props}/>,
-    X: (props) => <span data-testid="icon-x" {...props}/>,
-    Copy: (props) => <span data-testid="icon-copy" {...props}/>,
-    Check: (props) => <span data-testid="icon-check" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-    ArrowsClockwise: (props) => <span data-testid="icon-reschedule" {...props}/>,
-}));
+
 import { CalendarPage } from './Calendar';
 describe('CalendarPage', () => {
     beforeEach(() => {

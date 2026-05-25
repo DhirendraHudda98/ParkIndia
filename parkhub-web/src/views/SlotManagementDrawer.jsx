@@ -27,6 +27,8 @@ export function SlotManagementDrawer({ lot, onClose }) {
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [favoritesSet, setFavoritesSet] = useState(new Set());
+  const [favPending, setFavPending] = useState(new Set());
 
   const isIndia = designTheme === 'india';
   const isVoid = designTheme === 'void';
@@ -51,6 +53,53 @@ export function SlotManagementDrawer({ lot, onClose }) {
       loadData();
     }
   }, [lot]);
+
+  // Load favorites for this user when drawer opens
+  useEffect(() => {
+    let mounted = true;
+    if (!lot?.id) return undefined;
+    api.getFavorites().then((res) => {
+      if (!mounted) return;
+      if (res.success && res.data) {
+        setFavoritesSet(new Set(res.data.map((f) => f.slot_id)));
+      }
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, [lot?.id]);
+
+  async function toggleFavorite(slot) {
+    const slotId = slot.id;
+    if (favPending.has(slotId)) return;
+    setFavPending((p) => new Set(p).add(slotId));
+
+    if (favoritesSet.has(slotId)) {
+      const res = await api.removeFavorite(slotId);
+      if (res.success) {
+        setFavoritesSet((p) => {
+          const n = new Set(p);
+          n.delete(slotId);
+          return n;
+        });
+        toast.success('Removed');
+      } else {
+        toast.error(res.error?.message || 'Error');
+      }
+    } else {
+      const res = await api.addFavorite(slotId, lot.id);
+      if (res.success) {
+        setFavoritesSet((p) => new Set(p).add(slotId));
+        toast.success('Added');
+      } else {
+        toast.error(res.error?.message || 'Error');
+      }
+    }
+
+    setFavPending((p) => {
+      const n = new Set(p);
+      n.delete(slotId);
+      return n;
+    });
+  }
 
   async function loadData() {
     setLoading(true);
@@ -457,6 +506,20 @@ export function SlotManagementDrawer({ lot, onClose }) {
                             }`}
                           >
                             {s.status === 'available' ? 'Available' : 'Maintenance'}
+                          </button>
+
+                          {/* Favorite Button */}
+                          <button
+                            onClick={() => toggleFavorite(s)}
+                            disabled={favPending.has(s.id)}
+                            className={`p-2 rounded-xl text-surface-400 hover:text-amber-500 hover:bg-amber-500/10 transition disabled:opacity-50`}
+                            aria-label={favoritesSet.has(s.id) ? `Remove ${s.slot_number} from favorites` : `Add ${s.slot_number} to favorites`}
+                          >
+                            {favPending.has(s.id) ? (
+                              <SpinnerGap className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Star className={`w-4 h-4 ${favoritesSet.has(s.id) ? 'text-amber-500' : ''}`} />
+                            )}
                           </button>
 
                           {/* Delete Button */}

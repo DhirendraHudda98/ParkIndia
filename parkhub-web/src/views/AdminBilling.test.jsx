@@ -37,13 +37,7 @@ vi.mock('framer-motion', () => ({
 vi.mock('../context/ThemeContext', () => ({
     useTheme: () => mockUseTheme(),
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    CurrencyDollar: (props) => <span data-testid="icon-dollar" {...props}/>,
-    ChartBar: (props) => <span data-testid="icon-chart" {...props}/>,
-    DownloadSimple: (props) => <span data-testid="icon-download" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-    Buildings: (props) => <span data-testid="icon-buildings" {...props}/>,
-}));
+
 import { AdminBillingPage } from './AdminBilling';
 const sampleCcData = [
     { cost_center: 'CC-100', department: 'Engineering', user_count: 5, total_bookings: 20, total_credits_used: 100, total_amount: 250.50, currency: 'EUR' },

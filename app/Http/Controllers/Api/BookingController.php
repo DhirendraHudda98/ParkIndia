@@ -19,6 +19,7 @@ use App\Models\Notification;
 use App\Models\ParkingLot;
 use App\Models\ParkingSlot;
 use App\Models\Setting;
+use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\WaitlistEntry;
 use App\Models\Webhook;

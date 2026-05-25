@@ -18,8 +18,10 @@ class CreateAnnouncementRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'message' => 'required|string|max:10000',
-            'severity' => 'nullable|in:info,warning,error,success',
-            'expires_at' => 'nullable|date',
+            'severity' => 'required|in:info,warning,success',
+            'starts_at' => 'nullable|date',
+            'priority' => 'nullable|in:high,medium,low',
+            'expires_at' => 'nullable|date|after_or_equal:starts_at',
         ];
     }
 }

@@ -38,14 +38,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    PuzzlePiece: (props) => <span data-testid="icon-puzzle" {...props}/>,
-    ToggleLeft: (props) => <span data-testid="icon-toggle-left" {...props}/>,
-    ToggleRight: (props) => <span data-testid="icon-toggle-right" {...props}/>,
-    Gear: (props) => <span data-testid="icon-gear" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-    Lightning: (props) => <span data-testid="icon-lightning" {...props}/>,
-}));
+
 vi.mock('react-hot-toast', () => ({
     default: { success: (...a) => mockToastSuccess(...a), error: (...a) => mockToastError(...a) },
 }));

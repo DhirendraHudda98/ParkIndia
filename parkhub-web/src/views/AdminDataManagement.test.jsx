@@ -37,15 +37,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    UploadSimple: (props) => <span data-testid="icon-upload" {...props}/>,
-    DownloadSimple: (props) => <span data-testid="icon-download" {...props}/>,
-    FileArrowUp: (props) => <span data-testid="icon-file-up" {...props}/>,
-    FileArrowDown: (props) => <span data-testid="icon-file-down" {...props}/>,
-    Table: (props) => <span data-testid="icon-table" {...props}/>,
-    Warning: (props) => <span data-testid="icon-warning" {...props}/>,
-    CheckCircle: (props) => <span data-testid="icon-check" {...props}/>,
-}));
+
 vi.mock('../api/client', () => ({
     api: {},
 }));

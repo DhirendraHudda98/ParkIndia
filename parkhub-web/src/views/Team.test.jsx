@@ -36,9 +36,7 @@ vi.mock('framer-motion', () => ({
         div: React.forwardRef(({ children, initial, animate, exit, transition, ...props }, ref) => (<div ref={ref} {...props}>{children}</div>)),
     },
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Users: (props) => <span data-testid="icon-users" {...props}/>,
-}));
+
 vi.mock('../constants/absenceConfig', () => ({
     ABSENCE_CONFIG: {
         homeoffice: { icon: (props) => <span {...props}/>, color: 'text-primary-600', bg: 'bg-primary-100', dot: 'bg-primary-500' },

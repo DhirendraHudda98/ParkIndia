@@ -86,6 +86,9 @@ class PublicController extends Controller
     {
         $announcements = Announcement::where('active', true)
             ->where(function ($q) {
+                $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+            })
+            ->where(function ($q) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             })
             ->orderBy('created_at', 'desc')
@@ -97,6 +100,12 @@ class PublicController extends Controller
     public function activeAnnouncementsWrapped(): JsonResponse
     {
         $announcements = Announcement::where('active', true)
+            ->where(function ($q) {
+                $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 

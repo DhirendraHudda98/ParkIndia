@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Megaphone, Plus, PencilSimple, Trash, SpinnerGap, Check, X,
-  Info, Warning, WarningCircle, CheckCircle, Clock,
+  Info, Warning, WarningCircle, CheckCircle, Clock, CalendarBlank, Flag
 } from '@phosphor-icons/react';
 import { api } from '../api/client';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,8 @@ const emptyForm = {
   message: '',
   severity: 'info',
   active: true,
+  starts_at: '',
+  priority: 'medium',
   expires_at: '',
 };
 
@@ -43,15 +45,54 @@ function SeverityBadge({ severity, t, isIndia }) {
   );
 }
 
-function StatusBadge({ active, expiresAt, t, isIndia }) {
-  const isExpired = expiresAt && new Date(expiresAt) < new Date();
-  if (!active || isExpired) {
+function PriorityBadge({ priority, t, isIndia }) {
+  const priorityStyles = {
+    high:   { color: 'text-red-700 dark:text-red-400',     bg: 'bg-red-100 dark:bg-red-950/30' },
+    medium: { color: isIndia ? 'text-[#FF9933]' : 'text-orange-700 dark:text-orange-400', bg: isIndia ? 'bg-[#FF9933]/10' : 'bg-orange-100 dark:bg-orange-950/30' },
+    low:    { color: isIndia ? 'text-[#000080]' : 'text-blue-700 dark:text-blue-400', bg: isIndia ? 'bg-[#000080]/10' : 'bg-blue-100 dark:bg-blue-950/30' },
+  };
+
+  const priorityLabelKeys = {
+    high: 'admin.priorityHigh',
+    medium: 'admin.priorityMedium',
+    low: 'admin.priorityLow',
+  };
+
+  const cfg = priorityStyles[priority] || priorityStyles.medium;
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.color}`}>
+      <Flag weight="fill" className="w-3 h-3" />
+      {t(priorityLabelKeys[priority] || `admin.priority_${priority}`)}
+    </span>
+  );
+}
+
+function StatusBadge({ active, startsAt, expiresAt, t, isIndia }) {
+  const now = new Date();
+  const isExpired = expiresAt && new Date(expiresAt) < now;
+  const isNotStarted = startsAt && new Date(startsAt) > now;
+
+  if (!active) {
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-colors ${
-        isIndia ? 'bg-[#000080]/5 text-[#000080]/40' : 'bg-surface-100 dark:bg-surface-800 text-surface-500 dark:text-surface-400'
-      }`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-100 dark:bg-surface-800 text-surface-500 dark:text-surface-400`}>
         <Clock weight="fill" className="w-3.5 h-3.5" />
-        {isExpired ? t('admin.expired') : t('admin.inactive')}
+        {t('admin.inactive')}
+      </span>
+    );
+  }
+  if (isExpired) {
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400`}>
+        <Clock weight="fill" className="w-3.5 h-3.5" />
+        {t('admin.expired')}
+      </span>
+    );
+  }
+  if (isNotStarted) {
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400`}>
+        <CalendarBlank weight="fill" className="w-3.5 h-3.5" />
+        {t('admin.scheduled')}
       </span>
     );
   }
@@ -113,6 +154,8 @@ export function AdminAnnouncementsPage() {
       message: a.message,
       severity: a.severity,
       active: a.active,
+      starts_at: a.starts_at ? a.starts_at.slice(0, 16) : '',
+      priority: a.priority || 'medium',
       expires_at: a.expires_at ? a.expires_at.slice(0, 16) : '',
     });
     setShowForm(true);
@@ -136,7 +179,9 @@ export function AdminAnnouncementsPage() {
         message: form.message.trim(),
         severity: form.severity,
         active: form.active,
-        expires_at: form.expires_at || undefined,
+        starts_at: form.starts_at || null,
+        priority: form.priority,
+        expires_at: form.expires_at || null,
       };
       const res = editingId
         ? await api.adminUpdateAnnouncement(editingId, payload)
@@ -266,7 +311,7 @@ export function AdminAnnouncementsPage() {
                 <h3 className={`text-lg font-bold ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>
                   {editingId ? t('admin.editAnnouncement') : t('admin.newAnnouncement')}
                 </h3>
-                <button onClick={closeForm} className={`p-1.5 rounded-lg transition-colors ${isIndia ? 'text-[#000080]/30 hover:bg-[#000080]/5' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}`}>
+                <button onClick={closeForm} aria-label={t('common.close')} className={`p-1.5 rounded-lg transition-colors ${isIndia ? 'text-[#000080]/30 hover:bg-[#000080]/5' : 'hover:bg-surface-100 dark:hover:bg-surface-800'}`}>
                   <X weight="bold" className="w-5 h-5 text-surface-400" />
                 </button>
               </div>
@@ -294,7 +339,8 @@ export function AdminAnnouncementsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              {/* Grid Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                 {/* Severity */}
                 <div>
                   <label className={labelClass}>{t('admin.severity')}</label>
@@ -324,6 +370,20 @@ export function AdminAnnouncementsPage() {
                   </div>
                 </div>
 
+                {/* Priority Selection */}
+                <div>
+                  <label className={labelClass}>{t('admin.priority', 'Priority')}</label>
+                  <select
+                    value={form.priority}
+                    onChange={e => setForm(prev => ({ ...prev, priority: e.target.value }))}
+                    className={inputClass}
+                  >
+                    <option value="high">{t('admin.priorityHigh', 'High')}</option>
+                    <option value="medium">{t('admin.priorityMedium', 'Medium')}</option>
+                    <option value="low">{t('admin.priorityLow', 'Low')}</option>
+                  </select>
+                </div>
+
                 {/* Active toggle */}
                 <div>
                   <label className={labelClass}>{t('admin.status')}</label>
@@ -348,6 +408,17 @@ export function AdminAnnouncementsPage() {
                   </button>
                 </div>
 
+                {/* Starts at */}
+                <div>
+                  <label className={labelClass}>{t('admin.startsAt', 'Starts At (Schedule)')}</label>
+                  <input
+                    type="datetime-local"
+                    value={form.starts_at}
+                    onChange={e => setForm(prev => ({ ...prev, starts_at: e.target.value }))}
+                    className={inputClass}
+                  />
+                </div>
+
                 {/* Expires at */}
                 <div>
                   <label className={labelClass}>{t('admin.expiresAt')}</label>
@@ -365,7 +436,7 @@ export function AdminAnnouncementsPage() {
                 <button 
                   onClick={handleSave} 
                   disabled={saving} 
-                  className={`px-6 py-2.5 rounded-xl font-bold text-white transition flex items-center gap-2 ${
+                  className={`px-6 py-2.5 rounded-xl font-bold text-white transition flex items-center gap-2 btn-primary ${
                     isIndia ? 'bg-[#FF9933] hover:bg-[#E68A00]' : 'bg-primary-600 hover:bg-primary-700'
                   }`}
                 >
@@ -407,20 +478,23 @@ export function AdminAnnouncementsPage() {
                       {a.title}
                     </h3>
                     <SeverityBadge severity={a.severity} t={t} isIndia={isIndia} />
-                    <StatusBadge active={a.active} expiresAt={a.expires_at} t={t} isIndia={isIndia} />
+                    <PriorityBadge priority={a.priority || 'medium'} t={t} isIndia={isIndia} />
+                    <StatusBadge active={a.active} startsAt={a.starts_at} expiresAt={a.expires_at} t={t} isIndia={isIndia} />
                   </div>
                   <p className={`text-sm line-clamp-2 mb-2 ${isIndia ? 'text-[#000080]/70' : 'text-surface-600 dark:text-surface-400'}`}>
                     {a.message}
                   </p>
-                  <div className={`flex items-center gap-4 text-xs ${isIndia ? 'text-[#000080]/40' : 'text-surface-500 dark:text-surface-400'}`}>
+                  <div className={`flex flex-wrap items-center gap-x-4 gap-y-1 text-xs ${isIndia ? 'text-[#000080]/40' : 'text-surface-500 dark:text-surface-400'}`}>
                     <span>{t('admin.announcementCreatedAt')} {new Date(a.created_at).toLocaleDateString()}</span>
-                    {a.expires_at && <span>{t('admin.announcementExpiresAt')} {new Date(a.expires_at).toLocaleDateString()}</span>}
+                    {a.starts_at && <span>{t('admin.announcementStartsAt', 'Starts:')} {new Date(a.starts_at).toLocaleString()}</span>}
+                    {a.expires_at && <span>{t('admin.announcementExpiresAt')} {new Date(a.expires_at).toLocaleString()}</span>}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     onClick={() => openEdit(a)}
+                    aria-label={t('common.edit')}
                     className={`p-2 rounded-lg transition-colors ${isIndia ? 'text-[#000080]/30 hover:bg-[#000080]/5 hover:text-[#000080]' : 'text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800 hover:text-primary-600'}`}
                   >
                     <PencilSimple weight="bold" className="w-4.5 h-4.5" />
@@ -428,6 +502,7 @@ export function AdminAnnouncementsPage() {
                   <button
                     onClick={() => handleDelete(a.id)}
                     disabled={deletingId === a.id}
+                    aria-label={t('common.delete')}
                     className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-surface-400 hover:text-red-600 disabled:opacity-50"
                   >
                     {deletingId === a.id

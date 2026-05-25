@@ -9,7 +9,7 @@ export async function getStaticPaths() {
     'dashboard', 'bookings', 'book', 'credits', 'vehicles',
     'absences', 'profile', 'settings', 'team', 'notifications',
     'calendar', 'map', 'admin', 'admin/settings', 'admin/users',
-    'admin/announcements', 'admin/lots', 'admin/reports', 'admin/roles',
+    'admin/announcements', 'admin/lots', 'admin/zones', 'admin/reports', 'admin/roles',
     'admin/waitlist', 'admin/activity'
   ];
   return routes.map(slug => ({ params: { slug } }));
@@ -32,6 +32,52 @@ export async function getStaticPaths() {
     <meta property="og:image" content="/og-image.svg" />
     <meta property="og:locale" content="en_US" />
     <title>ParkHub</title>
+    <script is:inline>
+      // Brave Shields / Privacy Mode Defensive Storage Wrapper
+      (function() {
+        var storageSupported = false;
+        try {
+          if (typeof window !== 'undefined' && 'localStorage' in window && window.localStorage !== null) {
+            window.localStorage.setItem('__storage_test__', '1');
+            window.localStorage.removeItem('__storage_test__');
+            storageSupported = true;
+          }
+        } catch (e) {
+          storageSupported = false;
+        }
+
+        if (!storageSupported) {
+          var createMockStorage = function() {
+            var mockStore = {};
+            return {
+              getItem: function(key) { return mockStore[key] ?? null; },
+              setItem: function(key, val) { mockStore[key] = String(val); },
+              removeItem: function(key) { delete mockStore[key]; },
+              clear: function() { mockStore = {}; },
+              length: 0,
+              key: function(i) { return Object.keys(mockStore)[i] ?? null; }
+            };
+          };
+          try {
+            Object.defineProperty(window, 'localStorage', {
+              value: createMockStorage(),
+              writable: true,
+              configurable: true
+            });
+            Object.defineProperty(window, 'sessionStorage', {
+              value: createMockStorage(),
+              writable: true,
+              configurable: true
+            });
+          } catch (e) {
+            try {
+              window.localStorage = createMockStorage();
+              window.sessionStorage = createMockStorage();
+            } catch (err) {}
+          }
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app">

@@ -60,22 +60,7 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  Bell: (props) => <span data-testid="icon-bell" {...props} />,
-  X: (props) => <span data-testid="icon-x" {...props} />,
-  CheckCircle: (props) => <span data-testid="icon-check-circle" {...props} />,
-  XCircle: (props) => <span data-testid="icon-x-circle" {...props} />,
-  Clock: (props) => <span data-testid="icon-clock" {...props} />,
-  Queue: (props) => <span data-testid="icon-queue" {...props} />,
-  Wrench: (props) => <span data-testid="icon-wrench" {...props} />,
-  Megaphone: (props) => <span data-testid="icon-megaphone" {...props} />,
-  CurrencyDollar: (props) => <span data-testid="icon-dollar" {...props} />,
-  UserPlus: (props) => <span data-testid="icon-user-plus" {...props} />,
-  Check: (props) => <span data-testid="icon-check" {...props} />,
-  Trash: (props) => <span data-testid="icon-trash" {...props} />,
-  Question: (props) => <span data-testid="icon-question" {...props} />,
-  FunnelSimple: (props) => <span data-testid="icon-funnel" {...props} />,
-}));
+
 
 const mockToastSuccess = vi.fn();
 const mockToastError = vi.fn();

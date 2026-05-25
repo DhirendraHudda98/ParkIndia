@@ -57,17 +57,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    MagnifyingGlass: (props) => <span data-testid="icon-search" {...props}/>,
-    Coins: (props) => <span data-testid="icon-coins" {...props}/>,
-    PencilSimple: (props) => <span data-testid="icon-pencil" {...props}/>,
-    X: (props) => <span data-testid="icon-x" {...props}/>,
-    Check: (props) => <span data-testid="icon-check" {...props}/>,
-    UserMinus: (props) => <span data-testid="icon-user-minus" {...props}/>,
-    UserPlus: (props) => <span data-testid="icon-user-plus" {...props}/>,
-    Lightning: (props) => <span data-testid="icon-lightning" {...props}/>,
-}));
+
 vi.mock('../components/ui/DataTable', () => ({
     DataTable: ({ data, columns, emptyMessage }) => {
         return (<div data-testid="data-table">

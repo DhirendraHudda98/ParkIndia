@@ -23,7 +23,16 @@ export function QRCheckInPage() {
   const [acting, setActing] = useState(false);
   const [timerDisplay, setTimerDisplay] = useState('');
   const [currentStatus, setCurrentStatus] = useState('NOT_ARRIVED'); // NOT_ARRIVED, READY, CHECKED_IN, EXPIRED
+  const [qrUrl, setQrUrl] = useState(null);
   const timerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (qrUrl) {
+        URL.revokeObjectURL(qrUrl);
+      }
+    };
+  }, [qrUrl]);
 
   const isIndia = designTheme === 'india';
   const isVoid = designTheme === 'void';
@@ -39,7 +48,11 @@ export function QRCheckInPage() {
           .filter(b => b.status === 'active' || b.status === 'confirmed')
           .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
         
-        const active = sorted.find(b => new Date(b.end_time).getTime() > now);
+        const active = sorted.find(b => {
+          const startTime = new Date(b.start_time).getTime();
+          const endTime = new Date(b.end_time).getTime();
+          return endTime > now && now >= (startTime - 15 * 60 * 1000);
+        });
 
         if (active) {
           setBooking(active);
@@ -49,9 +62,21 @@ export function QRCheckInPage() {
           } else {
             setCheckInStatus({ checked_in: false, checked_in_at: null, checked_out_at: null });
           }
+
+          try {
+            const qrRes = await fetch(`/api/qr/${active.id}`);
+            if (qrRes.ok) {
+              const blob = await qrRes.blob();
+              const url = URL.createObjectURL(blob);
+              setQrUrl(url);
+            }
+          } catch (e) {
+            console.error('Failed to load QR code', e);
+          }
         } else {
           setBooking(null);
           setCheckInStatus(null);
+          setQrUrl(null);
         }
       }
     } catch {
@@ -137,7 +162,7 @@ export function QRCheckInPage() {
     }
     setActing(true);
     try {
-      const res = await api.checkInDirect();
+      const res = await api.checkIn(booking.id);
       if (res.success) {
         toast.success(res.message || t('checkin.checkedIn', 'Checked in successfully'));
         loadData();
@@ -370,9 +395,23 @@ export function QRCheckInPage() {
                   ? 'border-[#FF9933]/20 bg-white dark:bg-surface-950/80 dark:text-white'
                   : 'border-surface-200 bg-white text-surface-900 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.18)] dark:border-surface-800 dark:bg-surface-950/80 dark:text-white'
               }`}>
-                <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-[28px] ${isIndia ? 'bg-[#FF9933]/10 text-[#FF9933]' : 'bg-primary-500/10 text-primary-500'}`}>
-                  <SignIn weight="bold" className="h-10 w-10" />
-                </div>
+                {qrUrl ? (
+                  <div className="mb-6 flex flex-col items-center">
+                    <img
+                      src={qrUrl}
+                      alt={t('checkin.qrAlt')}
+                      data-testid="qr-code"
+                      className="w-44 h-44 rounded-2xl border border-stone-200 dark:border-surface-800 bg-white p-2 shadow-sm"
+                    />
+                    <p className={`mt-2 text-xs font-semibold uppercase tracking-wider opacity-60 ${isVoid ? 'text-slate-300' : 'text-surface-500 dark:text-white/45'}`}>
+                      {t('checkin.scanQr')}
+                    </p>
+                  </div>
+                ) : (
+                  <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-[28px] ${isIndia ? 'bg-[#FF9933]/10 text-[#FF9933]' : 'bg-primary-500/10 text-primary-500'}`}>
+                    <SignIn weight="bold" className="h-10 w-10" />
+                  </div>
+                )}
                 <h3 className="text-xl font-bold mb-2">{t('checkin.readyToPark')}</h3>
                 <p className={`text-center text-sm mb-8 ${isVoid ? 'text-slate-400' : 'text-surface-500 dark:text-surface-400'}`}>
                   Click the button below to confirm your arrival and start your session.

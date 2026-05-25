@@ -20,6 +20,22 @@ vi.mock('../../api/client', () => ({
 vi.mock('@number-flow/react', () => ({
     default: ({ value }) => <span>{value}</span>,
 }));
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key, fallback, options) => {
+            const keys = {
+                'announcements.none': 'Keine Ankündigungen',
+                'common.error': 'Fehler beim Laden',
+                'announcements.created': 'Ankündigung erstellt',
+                'announcements.deleted': 'Ankündigung gelöscht',
+            };
+            if (key === 'announcements.delete_aria') {
+                return `Ankündigung ${options?.id || ''} löschen`;
+            }
+            return keys[key] || fallback || key;
+        },
+    }),
+}));
 const mockToast = vi.fn();
 vi.mock('../Toast', () => ({
     useV5Toast: () => mockToast,

@@ -21,27 +21,29 @@ class ProductionSimulationSeeder extends Seeder
     // -------------------------------------------------------------------------
 
     private const LOTS = [
-        ['name' => 'CP Block A Parking', 'address' => 'Connaught Place, New Delhi', 'city' => 'New Delhi', 'slots' => 60,  'zones' => ['Premium Covered', 'EV Charging Only', 'Two-Wheeler designated']],
-        ['name' => 'UB City Basement', 'address' => 'Vittal Mallya Rd, Bengaluru', 'city' => 'Bengaluru', 'slots' => 120, 'zones' => ['VIP Wing', 'EV Charging Only', 'Standard']],
-        ['name' => 'BKC Financial District', 'address' => 'Bandra Kurla Complex, Mumbai', 'city' => 'Mumbai', 'slots' => 150, 'zones' => ['Ground', 'Floor 1', 'Premium Covered']],
-        ['name' => 'DLF Cyber Hub Parking', 'address' => 'Cyber City, Gurugram', 'city' => 'Gurgaon', 'slots' => 100, 'zones' => ['North Wing', 'South Wing', 'EV Charging Only']],
-        ['name' => 'Phoenix Mall Parking', 'address' => 'Viman Nagar, Pune', 'city' => 'Pune', 'slots' => 80,  'zones' => ['Outdoor', 'Basement', 'Two-Wheeler designated']],
-        ['name' => 'HITEC City P1', 'address' => 'Madhapur, Hyderabad', 'city' => 'Hyderabad', 'slots' => 90,  'zones' => ['Basement', 'EV Charging Only']],
-        ['name' => 'Marina Beach Parking', 'address' => 'Marina Beach Rd, Chennai', 'city' => 'Chennai', 'slots' => 75,  'zones' => ['Ground', 'Two-Wheeler designated']],
-        ['name' => 'Salt Lake Sector V', 'address' => 'Sector V, Kolkata', 'city' => 'Kolkata', 'slots' => 70,  'zones' => ['Main Campus', 'Annex']],
-        ['name' => 'SG Highway P+R', 'address' => 'SG Highway, Ahmedabad', 'city' => 'Ahmedabad', 'slots' => 65,  'zones' => ['Visitor', 'Staff']],
-        ['name' => 'Sector 17 Plaza Parking', 'address' => 'Sector 17, Chandigarh', 'city' => 'Chandigarh', 'slots' => 55,  'zones' => ['Daily', 'Monthly', 'EV Charging Only']],
-        ['name' => 'Lulu Mall Basement', 'address' => 'Edappally, Kochi', 'city' => 'Kochi', 'slots' => 90, 'zones' => ['P1', 'P2', 'Premium Covered']],
-        ['name' => 'Gomti Nagar Parking', 'address' => 'Gomti Nagar, Lucknow', 'city' => 'Lucknow', 'slots' => 60, 'zones' => ['Block A', 'Block B']],
-        ['name' => 'Palasia Square', 'address' => 'Palasia, Indore', 'city' => 'Indore', 'slots' => 40, 'zones' => ['Level 1', 'Two-Wheeler designated']],
-        ['name' => 'MI Road Parking', 'address' => 'MI Road, Jaipur', 'city' => 'Jaipur', 'slots' => 50, 'zones' => ['Ground', 'Underground']],
-        ['name' => 'Bhopal DB Mall', 'address' => 'MP Nagar, Bhopal', 'city' => 'Bhopal', 'slots' => 80, 'zones' => ['Zone A', 'Zone B', 'VIP']],
+        ['name' => 'CP Block A Parking', 'address' => 'Connaught Place, New Delhi', 'city' => 'New Delhi', 'slots' => 60,  'zones' => ['Premium Covered', 'EV Charging Only', 'Two-Wheeler designated'], 'latitude' => 28.6304, 'longitude' => 77.2177],
+        ['name' => 'UB City Basement', 'address' => 'Vittal Mallya Rd, Bengaluru', 'city' => 'Bengaluru', 'slots' => 120, 'zones' => ['VIP Wing', 'EV Charging Only', 'Standard'], 'latitude' => 12.9716, 'longitude' => 77.5958],
+        ['name' => 'BKC Financial District', 'address' => 'Bandra Kurla Complex, Mumbai', 'city' => 'Mumbai', 'slots' => 150, 'zones' => ['Ground', 'Floor 1', 'Premium Covered'], 'latitude' => 19.0674, 'longitude' => 72.8685],
+        ['name' => 'DLF Cyber Hub Parking', 'address' => 'Cyber City, Gurugram', 'city' => 'Gurgaon', 'slots' => 100, 'zones' => ['North Wing', 'South Wing', 'EV Charging Only'], 'latitude' => 28.4950, 'longitude' => 77.0898],
+        ['name' => 'Phoenix Mall Parking', 'address' => 'Viman Nagar, Pune', 'city' => 'Pune', 'slots' => 80,  'zones' => ['Outdoor', 'Basement', 'Two-Wheeler designated'], 'latitude' => 18.5622, 'longitude' => 73.9167],
+        ['name' => 'HITEC City P1', 'address' => 'Madhapur, Hyderabad', 'city' => 'Hyderabad', 'slots' => 90,  'zones' => ['Basement', 'EV Charging Only'], 'latitude' => 17.4435, 'longitude' => 78.3772],
+        ['name' => 'Marina Beach Parking', 'address' => 'Marina Beach Rd, Chennai', 'city' => 'Chennai', 'slots' => 75,  'zones' => ['Ground', 'Two-Wheeler designated'], 'latitude' => 13.0405, 'longitude' => 80.2824],
+        ['name' => 'Salt Lake Sector V', 'address' => 'Sector V, Kolkata', 'city' => 'Kolkata', 'slots' => 70,  'zones' => ['Main Campus', 'Annex'], 'latitude' => 22.5735, 'longitude' => 88.4331],
+        ['name' => 'SG Highway P+R', 'address' => 'SG Highway, Ahmedabad', 'city' => 'Ahmedabad', 'slots' => 65,  'zones' => ['Visitor', 'Staff'], 'latitude' => 23.0269, 'longitude' => 72.5074],
+        ['name' => 'Sector 17 Plaza Parking', 'address' => 'Sector 17, Chandigarh', 'city' => 'Chandigarh', 'slots' => 55,  'zones' => ['Daily', 'Monthly', 'EV Charging Only'], 'latitude' => 30.7410, 'longitude' => 76.7824],
+        ['name' => 'Lulu Mall Basement', 'address' => 'Edappally, Kochi', 'city' => 'Kochi', 'slots' => 90, 'zones' => ['P1', 'P2', 'Premium Covered'], 'latitude' => 10.0272, 'longitude' => 76.3080],
+        ['name' => 'Gomti Nagar Parking', 'address' => 'Gomti Nagar, Lucknow', 'city' => 'Lucknow', 'slots' => 60, 'zones' => ['Block A', 'Block B'], 'latitude' => 26.8524, 'longitude' => 80.9925],
+        ['name' => 'Palasia Square', 'address' => 'Palasia, Indore', 'city' => 'Indore', 'slots' => 40, 'zones' => ['Level 1', 'Two-Wheeler designated'], 'latitude' => 22.7275, 'longitude' => 75.8824],
+        ['name' => 'MI Road Parking', 'address' => 'MI Road, Jaipur', 'city' => 'Jaipur', 'slots' => 50, 'zones' => ['Ground', 'Underground'], 'latitude' => 26.9158, 'longitude' => 75.8058],
+        ['name' => 'Bhopal DB Mall', 'address' => 'MP Nagar, Bhopal', 'city' => 'Bhopal', 'slots' => 80, 'zones' => ['Zone A', 'Zone B', 'VIP'], 'latitude' => 23.2324, 'longitude' => 77.4310],
         // Additional High Capacity Indian Lots
-        ['name' => 'Electronic City Phase 1', 'address' => 'Hosur Road, Bengaluru', 'city' => 'Bengaluru', 'slots' => 150, 'zones' => ['Tech Park A', 'Tech Park B', 'EV Charging Only']],
-        ['name' => 'Andheri East Hub', 'address' => 'Andheri East, Mumbai', 'city' => 'Mumbai', 'slots' => 110, 'zones' => ['Underground P1', 'Underground P2', 'Premium Covered']],
-        ['name' => 'Manyata Tech Park', 'address' => 'Nagavara, Bengaluru', 'city' => 'Bengaluru', 'slots' => 200, 'zones' => ['Block C', 'Block D', 'Two-Wheeler designated']],
-        ['name' => 'Infocity Bhubaneswar', 'address' => 'Patia, Bhubaneswar', 'city' => 'Bhubaneswar', 'slots' => 50, 'zones' => ['Zone 1', 'EV Charging Only']],
-        ['name' => 'Noida Sector 62', 'address' => 'Sector 62, Noida', 'city' => 'Noida', 'slots' => 85, 'zones' => ['Tower A', 'Tower B']],
+        ['name' => 'Electronic City Phase 1', 'address' => 'Hosur Road, Bengaluru', 'city' => 'Bengaluru', 'slots' => 150, 'zones' => ['Tech Park A', 'Tech Park B', 'EV Charging Only'], 'latitude' => 12.8407, 'longitude' => 77.6763],
+        ['name' => 'Andheri East Hub', 'address' => 'Andheri East, Mumbai', 'city' => 'Mumbai', 'slots' => 110, 'zones' => ['Underground P1', 'Underground P2', 'Premium Covered'], 'latitude' => 19.1158, 'longitude' => 72.8724],
+        ['name' => 'Manyata Tech Park', 'address' => 'Nagavara, Bengaluru', 'city' => 'Bengaluru', 'slots' => 200, 'zones' => ['Block C', 'Block D', 'Two-Wheeler designated'], 'latitude' => 13.0451, 'longitude' => 77.6200],
+        ['name' => 'Infocity Bhubaneswar', 'address' => 'Patia, Bhubaneswar', 'city' => 'Bhubaneswar', 'slots' => 50, 'zones' => ['Zone 1', 'EV Charging Only'], 'latitude' => 20.3547, 'longitude' => 85.8158],
+        ['name' => 'Noida Sector 62', 'address' => 'Sector 62, Noida', 'city' => 'Noida', 'slots' => 85, 'zones' => ['Tower A', 'Tower B'], 'latitude' => 28.6219, 'longitude' => 77.3639],
+        ['name' => 'Jalandhar City Center Parking', 'address' => 'GT Road, Near City Center, Jalandhar', 'city' => 'Jalandhar', 'slots' => 150, 'zones' => ['Zone A', 'Zone B', 'EV Charging Only'], 'latitude' => 31.3260, 'longitude' => 75.5762],
+        ['name' => 'Model Town Market Parking', 'address' => 'Model Town, Jalandhar', 'city' => 'Jalandhar', 'slots' => 100, 'zones' => ['Premium Ground', 'Two-Wheeler designated'], 'latitude' => 31.3115, 'longitude' => 75.5861],
     ];
 
     private const FIRST_NAMES = [
@@ -259,15 +261,21 @@ class ProductionSimulationSeeder extends Seeder
 
         foreach (self::LOTS as $lotDef) {
             $lotId = Str::uuid()->toString();
+            $hourlyRate = rand(4, 12) * 10;
             DB::table('parking_lots')->insert([
                 'id' => $lotId,
                 'name' => $lotDef['name'],
                 'address' => $lotDef['address'],
                 'city' => $lotDef['city'] ?? 'Unknown',
+                'latitude' => $lotDef['latitude'] ?? null,
+                'longitude' => $lotDef['longitude'] ?? null,
                 'total_slots' => $lotDef['slots'],
                 'available_slots' => $lotDef['slots'],
                 'available_spots' => $lotDef['slots'],
                 'status' => 'open',
+                'hourly_rate' => $hourlyRate,
+                'hourly_rate_inr' => $hourlyRate,
+                'currency' => 'INR',
                 'created_at' => now()->subDays(35),
                 'updated_at' => now(),
             ]);

@@ -97,24 +97,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    CalendarCheck: (props) => <span data-testid="icon-calendar-check" {...props}/>,
-    Car: (props) => <span data-testid="icon-car" {...props}/>,
-    Coins: (props) => <span data-testid="icon-coins" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    CalendarPlus: (props) => <span data-testid="icon-calendar-plus" {...props}/>,
-    ArrowRight: (props) => <span data-testid="icon-arrow-right" {...props}/>,
-    TrendUp: (props) => <span data-testid="icon-trend-up" {...props}/>,
-    MapPin: (props) => <span data-testid="icon-map-pin" {...props}/>,
-    ChartLine: (props) => <span data-testid="icon-chart-line" {...props}/>,
-    Gauge: (props) => <span data-testid="icon-gauge" {...props}/>,
-    CurrencyDollar: (props) => <span data-testid="icon-dollar" {...props}/>,
-    Timer: (props) => <span data-testid="icon-timer" {...props}/>,
-    ArrowUp: (props) => <span data-testid="icon-arrow-up" {...props}/>,
-    ArrowDown: (props) => <span data-testid="icon-arrow-down" {...props}/>,
-    CircleDashed: (props) => <span data-testid="icon-circle-dashed" {...props}/>,
-    Leaf: (props) => <span data-testid="icon-leaf" {...props}/>,
-}));
+
 vi.mock('../components/KineticObservatory', () => ({
     KpiCard: ({ label, value, live, delta, ...rest }) => {
         // Honor a caller-provided data-testid (Dashboard sets kpi-active-bookings,

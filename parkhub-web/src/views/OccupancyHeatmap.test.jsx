@@ -29,12 +29,7 @@ vi.mock('framer-motion', () => ({
         div: React.forwardRef(({ children, initial, animate, exit, transition, ...props }, ref) => (<div ref={ref} {...props}>{children}</div>)),
     },
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    ChartBar: (props) => <span data-testid="icon-chart" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    CalendarBlank: (props) => <span data-testid="icon-calendar" {...props}/>,
-    TrendUp: (props) => <span data-testid="icon-trend" {...props}/>,
-}));
+
 vi.mock('../api/client', () => ({
     getInMemoryToken: () => 'test-token',
 }));

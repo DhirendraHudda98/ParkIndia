@@ -11,15 +11,7 @@ vi.mock('../api/client', () => ({
 vi.mock('../context/ThemeContext', () => ({
     useTheme: () => mockUseTheme(),
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    ChartBar: (p) => <span {...p}/>,
-    TrendUp: (p) => <span {...p}/>,
-    Users: (p) => <span {...p}/>,
-    Clock: (p) => <span {...p}/>,
-    CurrencyDollar: (p) => <span {...p}/>,
-    Export: (p) => <span {...p}/>,
-    CalendarBlank: (p) => <span {...p}/>,
-}));
+
 import { AdminAnalyticsPage } from './AdminAnalytics';
 const mockData = {
     data: {

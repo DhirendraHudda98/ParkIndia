@@ -60,6 +60,7 @@ class MapController extends Controller
                 'latitude' => (float) $lot->latitude,
                 'longitude' => (float) $lot->longitude,
                 'available_slots' => $availableSlots,
+                'available_spots' => $availableSlots,
                 'total_slots' => $totalSlots,
                 'status' => $lot->status,
                 'color' => $color,

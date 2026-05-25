@@ -4,11 +4,7 @@ import { render, screen } from "@testing-library/react";
 
 // ── Mocks ──
 
-vi.mock("@phosphor-icons/react", () => ({
-  CarSimple: (props) => <span data-testid="icon-car" {...props} />,
-  ArrowClockwise: (props) => <span data-testid="icon-reload" {...props} />,
-  Warning: (props) => <span data-testid="icon-warning" {...props} />,
-}));
+
 
 import { ErrorBoundary } from "./ErrorBoundary";
 

@@ -39,12 +39,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Buildings: (props) => <span data-testid="icon-buildings" {...props}/>,
-    Plus: (props) => <span data-testid="icon-plus" {...props}/>,
-    X: (props) => <span data-testid="icon-x" {...props}/>,
-    PencilSimple: (props) => <span data-testid="icon-pencil" {...props}/>,
-}));
+
 import { AdminTenantsPage } from './AdminTenants';
 const sampleTenants = [
     { id: 't-1', name: 'Acme Corp', domain: 'acme.com', branding: { primary_color: '#FF5733' }, created_at: '2026-01-01', updated_at: '2026-01-01', user_count: 5, lot_count: 2 },

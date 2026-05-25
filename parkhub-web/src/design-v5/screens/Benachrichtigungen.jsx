@@ -57,29 +57,29 @@ export function BenachrichtigungenV5({ navigate: _navigate }) {
                 active,
             });
             if (!res.success)
-                throw new Error(res.error?.message ?? 'Creation failed');
+                throw new Error(res.error?.message ?? t('common.error', 'Creation failed'));
             return res.data;
         },
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ['admin-announcements'] });
             setTitle('');
             setMessage('');
-            toast('Announcement created', 'success');
+            toast(t('announcements.created', 'Announcement created'), 'success');
         },
-        onError: (err) => toast(err.message || 'Creation failed', 'error'),
+        onError: (err) => toast(err.message || t('common.error', 'Creation failed'), 'error'),
     });
     const deleteMutation = useMutation({
         mutationFn: async (id) => {
             const res = await api.adminDeleteAnnouncement(id);
             if (!res.success)
-                throw new Error(res.error?.message ?? 'Deletion failed');
+                throw new Error(res.error?.message ?? t('common.error', 'Deletion failed'));
             return res.data;
         },
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ['admin-announcements'] });
-            toast('Announcement deleted', 'success');
+            toast(t('announcements.deleted', 'Announcement deleted'), 'success');
         },
-        onError: (err) => toast(err.message || 'Deletion failed', 'error'),
+        onError: (err) => toast(err.message || t('common.error', 'Deletion failed'), 'error'),
     });
     const activeCount = items.filter((a) => a.active).length;
     if (isLoading) {
@@ -91,7 +91,7 @@ export function BenachrichtigungenV5({ navigate: _navigate }) {
         return (<div style={{ padding: 16, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Card className="v5-ani" style={{ padding: 28, textAlign: 'center', maxWidth: 360 }}>
           <V5NamedIcon name="x" size={26} color="var(--v5-err)"/>
-          <div style={{ marginTop: 10, fontWeight: 600, color: 'var(--v5-txt)' }}>Error loading data</div>
+          <div style={{ marginTop: 10, fontWeight: 600, color: 'var(--v5-txt)' }}>{t('common.error', 'Error loading data')}</div>
         </Card>
       </div>);
     }
@@ -176,7 +176,7 @@ export function BenachrichtigungenV5({ navigate: _navigate }) {
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--v5-mut)', marginTop: 3 }}>{a.message}</div>
                 </div>
-                <button type="button" disabled={deleting} aria-label={`Delete announcement ${a.id}`} onClick={() => deleteMutation.mutate(a.id)} style={{
+                <button type="button" disabled={deleting} aria-label={t('announcements.delete_aria', 'Delete announcement {{id}}', { id: a.id })} onClick={() => deleteMutation.mutate(a.id)} style={{
                         padding: '4px 10px', borderRadius: 7, background: 'var(--v5-sur2)',
                         border: '1px solid var(--v5-bor)', fontSize: 10, fontWeight: 500, color: 'var(--v5-err)',
                         cursor: deleting ? 'default' : 'pointer', opacity: deleting ? 0.5 : 1, flexShrink: 0,

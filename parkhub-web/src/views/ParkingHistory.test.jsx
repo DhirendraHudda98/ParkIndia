@@ -55,19 +55,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    ClockCounterClockwise: (props) => <span data-testid="icon-history" {...props}/>,
-    Star: (props) => <span data-testid="icon-star" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    TrendUp: (props) => <span data-testid="icon-trend-up" {...props}/>,
-    CalendarBlank: (props) => <span data-testid="icon-calendar" {...props}/>,
-    FunnelSimple: (props) => <span data-testid="icon-filter" {...props}/>,
-    CaretLeft: (props) => <span data-testid="icon-left" {...props}/>,
-    CaretRight: (props) => <span data-testid="icon-right" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    Coins: (props) => <span data-testid="icon-coins" {...props}/>,
-}));
+
 vi.mock('../components/OnboardingHint', () => ({
     OnboardingHint: ({ text }) => <span data-testid="onboarding-hint">{text}</span>,
 }));

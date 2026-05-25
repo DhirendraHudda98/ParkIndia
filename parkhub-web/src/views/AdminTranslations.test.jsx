@@ -25,21 +25,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Translate: (props) => <span data-testid="icon-translate" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    Check: (props) => <span data-testid="icon-check" {...props}/>,
-    X: (props) => <span data-testid="icon-x" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    Eye: (props) => <span data-testid="icon-eye" {...props}/>,
-    ThumbsUp: (props) => <span data-testid="icon-thumbs-up" {...props}/>,
-    ThumbsDown: (props) => <span data-testid="icon-thumbs-down" {...props}/>,
-    ChatCircleDots: (props) => <span data-testid="icon-chat" {...props}/>,
-    ArrowsClockwise: (props) => <span data-testid="icon-refresh" {...props}/>,
-    CheckCircle: (props) => <span data-testid="icon-check-circle" {...props}/>,
-    XCircle: (props) => <span data-testid="icon-x-circle" {...props}/>,
-    MagnifyingGlass: (props) => <span data-testid="icon-search" {...props}/>,
-}));
+
 vi.mock('@tanstack/react-table', () => ({
     createColumnHelper: () => ({
         accessor: (key, opts) => ({ ...opts, accessorKey: key }),

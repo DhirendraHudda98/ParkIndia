@@ -139,14 +139,7 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  Sparkle: (props) => <span data-testid="icon-sparkle" {...props} />,
-  Eye: (props) => <span data-testid="icon-eye" {...props} />,
-  Timer: (props) => <span data-testid="icon-timer" {...props} />,
-  ArrowsClockwise: (props) => <span data-testid="icon-refresh" {...props} />,
-  CaretDown: (props) => <span data-testid="icon-caret-down" {...props} />,
-  CaretUp: (props) => <span data-testid="icon-caret-up" {...props} />,
-}));
+
 
 import { DemoOverlay } from "./DemoOverlay";
 

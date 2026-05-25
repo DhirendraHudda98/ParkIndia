@@ -16,11 +16,7 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  CaretUp: (props) => <span data-testid="icon-caret-up" {...props} />,
-  CaretDown: (props) => <span data-testid="icon-caret-down" {...props} />,
-  DownloadSimple: (props) => <span data-testid="icon-download" {...props} />,
-}));
+
 
 import { DataTable } from "./DataTable";
 

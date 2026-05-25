@@ -173,6 +173,174 @@ Routing endpoints are divided into web and API channels, providing secure access
 > [!NOTE]
 > **Route Rate-Limiter Policy**: Public route groups (like login/register and webhook inputs) are protected by a throttle middleware (default: `throttle:60,1`) to prevent brute-force attacks.
 
+### 4.3 Source File Inventory Summary
+
+The current project inventory uses file names only, grouped by area.
+
+**Controllers (71 total)**
+
+```text
+AbsenceApprovalController.php
+AbsenceController.php
+AccessibleParkingController.php
+AdminAnalyticsController.php
+AdminAnnouncementController.php
+AdminController.php
+AdminReportController.php
+AdminSettingsController.php
+ApiKeyController.php
+ApiVersionController.php
+AuditLogController.php
+AuthController.php
+BillingController.php
+BookingCalendarController.php
+BookingCheckInController.php
+BookingController.php
+BookingInvoiceController.php
+BookingSwapController.php
+CityController.php
+ComplianceController.php
+DemoController.php
+EVChargingController.php
+EnhancedBookingCheckInController.php
+GraphQLController.php
+GuestBookingController.php
+HardwareWebhookController.php
+HealthController.php
+ICalController.php
+LotController.php
+MapController.php
+MetricsController.php
+MiscController.php
+MobileBookingController.php
+ModuleController.php
+NotificationCenterController.php
+NotificationPreferencesController.php
+OAuthController.php
+ParkingAvailabilityController.php
+ParkingHistoryController.php
+ParkingPassController.php
+ParkingZoneAdminController.php
+ParkingZoneController.php
+PWAController.php
+PredictionController.php
+PublicController.php
+PushController.php
+RBACController.php
+RateDashboardController.php
+RecommendationController.php
+RecurringBookingController.php
+RescheduleController.php
+RoleAdminController.php
+ScheduledReportController.php
+SessionController.php
+SetupController.php
+SetupWizardController.php
+SharingController.php
+SlotController.php
+SSOController.php
+SseController.php
+SystemController.php
+ThemeController.php
+TranslationController.php
+TwoFactorController.php
+UpdateController.php
+UserController.php
+VehicleController.php
+WaitlistController.php
+WalletController.php
+WidgetController.php
+ZoneController.php
+```
+
+**Route files (5 total)**
+
+```text
+api.php
+api_v1.php
+channels.php
+console.php
+web.php
+```
+
+**Views (70 total: 3 Blade views + 67 frontend view components; test files excluded)**
+
+```text
+Blade views
+checkin.blade.php
+invoice.blade.php
+privacy.blade.php
+
+Frontend views
+AbsenceApproval.jsx
+Absences.jsx
+Admin.jsx
+AdminAccessible.jsx
+AdminAnalytics.jsx
+AdminAnnouncements.jsx
+AdminAuditLog.jsx
+AdminBilling.jsx
+AdminBookingsManagement.jsx
+AdminCompliance.jsx
+AdminDashboard.jsx
+AdminDataManagement.jsx
+AdminEnhancedDashboard.jsx
+AdminFeatures.jsx
+AdminFleet.jsx
+AdminLots.jsx
+AdminMaintenance.jsx
+AdminModules.jsx
+AdminParkingManagement.jsx
+AdminPlugins.jsx
+AdminRateLimits.jsx
+AdminRealTimeMonitoring.jsx
+AdminReports.jsx
+AdminRoles.jsx
+AdminScheduledReports.jsx
+AdminSettings.jsx
+AdminSSO.jsx
+AdminTenants.jsx
+AdminTranslations.jsx
+AdminUpdates.jsx
+AdminUsers.jsx
+AdminUsersManagement.jsx
+AdminWebhooks.jsx
+AdminZones.jsx
+Book.jsx
+Bookings.jsx
+BookingSharing.jsx
+Calendar.jsx
+Credits.jsx
+Dashboard.jsx
+EVCharging.jsx
+Favorites.jsx
+ForgotPassword.jsx
+GuestPass.jsx
+LobbyDisplay.jsx
+Login.jsx
+MapView.jsx
+NotFound.jsx
+Notifications.jsx
+OccupancyHeatmap.jsx
+OccupancyPrediction.jsx
+ParkingHistory.jsx
+ParkingPassView.jsx
+Profile.jsx
+QRCheckIn.jsx
+Register.jsx
+Settings.jsx
+SetupWizard.jsx
+SlotManagementDrawer.jsx
+Team.jsx
+TeamLeaderboard.jsx
+Translations.jsx
+UseCaseSelector.jsx
+Vehicles.jsx
+Visitors.jsx
+Waitlist.jsx
+Welcome.jsx
+```
+
 ---
 
 ## 5. Controller Architecture & Core Controllers
@@ -337,7 +505,7 @@ ParkHub implements multiple security layers to protect the system and ensure rel
 
 | API Endpoint | Validation Guardrails (FormRequest) | Architectural Purpose |
 | :--- | :--- | :--- |
-| `/api/register` | `name` => required, string, max:255<br>`email` => required, email, unique:users<br>`password` => required, min:8, confirmed | Validates new user profiles and email uniqueness, preventing duplicate accounts. |
+| `/api/register` | `username` => nullable, string, min:3, max:50, unique:users, alpha_dash<br>`name` => required, string, max:255<br>`email` => required, email, max:255, unique:users<br>`password` => required, string, confirmed, PasswordPolicyRule | Validates the registration payload, enforces unique email and username rules, and applies the password policy before account creation. |
 | `/api/bookings` | `slot_id` => required, exists:slots,id<br>`start_time` => required, date, after:now<br>`vehicle_plate` => regex:/^[A-Z]{2}\d{2}[A-Z]{1,2}\d{4}$/ | Validates the slot ID and ensures the license plate matches standard Indian vehicle formats (e.g. MH12AB1234). |
 | `/api/user/wallet/add` | `amount` => required, integer, min:100, max:10000 | Enforces minimum (₹100) and maximum (₹10,000) limits for digital wallet top-ups. |
 

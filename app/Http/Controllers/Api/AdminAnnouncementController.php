@@ -23,8 +23,8 @@ class AdminAnnouncementController extends Controller
     {
         $this->authorize('create', Announcement::class);
         $ann = Announcement::create(array_merge(
-            $request->only(['title', 'message', 'severity', 'expires_at']),
-            ['created_by' => $request->user()->id, 'active' => true]
+            $request->only(['title', 'message', 'severity', 'starts_at', 'priority', 'expires_at']),
+            ['created_by' => $request->user()->id, 'active' => $request->boolean('active', true)]
         ));
 
         return response()->json($ann, 201);
@@ -34,7 +34,7 @@ class AdminAnnouncementController extends Controller
     {
         $ann = Announcement::findOrFail($id);
         $this->authorize('update', $ann);
-        $ann->update($request->only(['title', 'message', 'severity', 'active', 'expires_at']));
+        $ann->update($request->only(['title', 'message', 'severity', 'active', 'starts_at', 'priority', 'expires_at']));
 
         return response()->json($ann);
     }

@@ -47,12 +47,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Star: (props) => <span data-testid="icon-star" {...props}/>,
-    Trash: (props) => <span data-testid="icon-trash" {...props}/>,
-    MapPin: (props) => <span data-testid="icon-map-pin" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-}));
+
 vi.mock('react-hot-toast', () => ({
     default: {
         success: vi.fn(),

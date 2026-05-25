@@ -30,10 +30,7 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  DownloadSimple: (props) => <span data-testid="icon-download" {...props} />,
-  X: (props) => <span data-testid="icon-x" {...props} />,
-}));
+
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({

@@ -30,14 +30,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Wheelchair: (props) => <span data-testid="icon-wheelchair" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-    ToggleLeft: (props) => <span data-testid="icon-toggle-left" {...props}/>,
-    ToggleRight: (props) => <span data-testid="icon-toggle-right" {...props}/>,
-    ChartBar: (props) => <span data-testid="icon-chart" {...props}/>,
-    Users: (props) => <span data-testid="icon-users" {...props}/>,
-}));
+
 import { AdminAccessiblePage } from './AdminAccessible';
 const sampleStats = {
     total_accessible_slots: 5,

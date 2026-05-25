@@ -4,12 +4,19 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k, f) => (typeof f === 'string' ? f : f?.count != null ? `${f.count} active` : k) }) }));
 vi.mock('framer-motion', () => ({
     motion: { div: React.forwardRef(({ children, ...p }, r) => <div ref={r} {...p}>{children}</div>) },
+    AnimatePresence: ({ children }) => <>{children}</>,
 }));
 vi.mock('@phosphor-icons/react', () => {
     const C = (p) => <span {...p}/>;
     return { Wrench: C, Plus: C, Trash: C, PencilSimple: C, Question: C, CalendarBlank: C, Warning: C };
 });
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
+vi.mock('../context/ThemeContext', () => ({
+    useTheme: () => ({ designTheme: 'marble' }),
+}));
+vi.mock('../api/client', () => ({
+    getInMemoryToken: () => 'mock-token',
+}));
 import { AdminMaintenancePage } from './AdminMaintenance';
 import toast from 'react-hot-toast';
 const now = new Date();

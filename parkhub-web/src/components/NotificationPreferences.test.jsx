@@ -34,19 +34,7 @@ vi.mock("react-hot-toast", () => ({
   default: mockToast,
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  Bell: (props) => <span data-testid="icon-Bell" {...props} />,
-  SpinnerGap: (props) => <span data-testid="icon-SpinnerGap" {...props} />,
-  FloppyDisk: (props) => <span data-testid="icon-FloppyDisk" {...props} />,
-  EnvelopeSimple: (props) => (
-    <span data-testid="icon-EnvelopeSimple" {...props} />
-  ),
-  DeviceMobile: (props) => <span data-testid="icon-DeviceMobile" {...props} />,
-  ChatCircleDots: (props) => (
-    <span data-testid="icon-ChatCircleDots" {...props} />
-  ),
-  Phone: (props) => <span data-testid="icon-Phone" {...props} />,
-}));
+
 
 import { NotificationPreferencesComponent } from "./NotificationPreferences";
 

@@ -9,9 +9,7 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  CaretRight: (props) => <span data-testid="caret-right" {...props} />,
-}));
+
 
 import { Breadcrumb, SEGMENT_LABELS } from "./Breadcrumb";
 

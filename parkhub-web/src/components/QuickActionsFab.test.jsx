@@ -65,14 +65,7 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  Plus: (props) => <span data-testid="icon-plus" {...props} />,
-  X: (props) => <span data-testid="icon-x" {...props} />,
-  CalendarPlus: (props) => <span data-testid="icon-cal-plus" {...props} />,
-  Car: (props) => <span data-testid="icon-car" {...props} />,
-  CoinVertical: (props) => <span data-testid="icon-coin" {...props} />,
-  CalendarCheck: (props) => <span data-testid="icon-cal-check" {...props} />,
-}));
+
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({

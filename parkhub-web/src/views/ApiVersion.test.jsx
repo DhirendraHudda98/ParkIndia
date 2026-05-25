@@ -16,10 +16,7 @@ vi.mock('react-i18next', () => ({
         },
     }),
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Code: (props) => <span data-testid="icon-code" {...props}/>,
-    Info: (props) => <span data-testid="icon-info" {...props}/>,
-}));
+
 import { ApiVersionBadge, ApiVersionAdmin } from './ApiVersion';
 const sampleVersionInfo = {
     version: '4.1.0',

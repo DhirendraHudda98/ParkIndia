@@ -17,10 +17,12 @@ class UpdateAnnouncementRequest extends FormRequest
     {
         return [
             'title' => 'sometimes|string|max:255',
-            'message' => 'sometimes|string',
-            'severity' => 'sometimes|in:info,warning,error,success',
+            'message' => 'sometimes|string|max:10000',
+            'severity' => 'sometimes|in:info,warning,success',
             'active' => 'sometimes|boolean',
-            'expires_at' => 'sometimes|nullable|date',
+            'starts_at' => 'sometimes|nullable|date',
+            'priority' => 'sometimes|nullable|in:high,medium,low',
+            'expires_at' => 'sometimes|nullable|date|after_or_equal:starts_at',
         ];
     }
 }

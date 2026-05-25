@@ -14,6 +14,9 @@ vi.mock('../api/client', () => ({
         adminDeleteAnnouncement: (...a) => mockDeleteAnnouncement(...a),
     },
 }));
+vi.mock('../context/ThemeContext', () => ({
+    useTheme: () => ({ designTheme: 'marble' }),
+}));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k }) }));
 vi.mock('framer-motion', () => ({
     motion: { div: React.forwardRef(({ children, ...p }, r) => <div ref={r} {...p}>{children}</div>) },
@@ -21,7 +24,7 @@ vi.mock('framer-motion', () => ({
 }));
 vi.mock('@phosphor-icons/react', () => {
     const C = (p) => <span {...p}/>;
-    return { Megaphone: C, Plus: C, PencilSimple: C, Trash: C, SpinnerGap: C, Check: C, X: C, Info: C, Warning: C, WarningCircle: C, CheckCircle: C, Clock: C };
+    return { Megaphone: C, Plus: C, PencilSimple: C, Trash: C, SpinnerGap: C, Check: C, X: C, Info: C, Warning: C, WarningCircle: C, CheckCircle: C, Clock: C, CalendarBlank: C, Flag: C };
 });
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('../components/ui/ConfirmDialog', () => ({

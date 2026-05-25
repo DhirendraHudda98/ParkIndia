@@ -21,6 +21,9 @@ const mockUseTheme = vi.fn();
 vi.mock('../api/client', () => ({
     api: {
         getBookings: (...args) => mockGetBookings(...args),
+        getCheckInStatus: (id) => global.fetch(`/api/v1/bookings/${id}/check-in`).then(res => res.json()),
+        checkIn: (id) => global.fetch(`/api/v1/bookings/${id}/check-in`, { method: 'POST' }).then(res => res.json()),
+        checkOut: (id) => global.fetch(`/api/v1/bookings/${id}/check-out`, { method: 'POST' }).then(res => res.json()),
     },
     getInMemoryToken: () => 'test-token',
 }));
@@ -50,6 +53,13 @@ vi.mock('react-i18next', () => ({
                 'checkin.endTime': 'End',
                 'checkin.qrAlt': 'QR Code for check-in',
                 'checkin.scanQr': 'Show this QR code at the entrance',
+                'checkin.statusLabel': 'Status',
+                'checkin.notArrived': 'Not Arrived',
+                'checkin.readyToPark': 'Ready to Park',
+                'checkin.sessionActive': 'Active Session',
+                'checkin.expired': 'Expired',
+                'checkin.opsLabel': 'Arrival briefing',
+                'checkin.tooEarly': 'Too Early',
                 'dashboard.slot': 'Slot',
                 'common.error': 'Error',
             };
@@ -64,16 +74,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    QrCode: (props) => <span data-testid="icon-qrcode" {...props}/>,
-    SignIn: (props) => <span data-testid="icon-signin" {...props}/>,
-    SignOut: (props) => <span data-testid="icon-signout" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    MapPin: (props) => <span data-testid="icon-mappin" {...props}/>,
-    CalendarBlank: (props) => <span data-testid="icon-calendar" {...props}/>,
-    ArrowClockwise: (props) => <span data-testid="icon-refresh" {...props}/>,
-}));
+
 vi.mock('react-hot-toast', () => ({
     default: { success: vi.fn(), error: vi.fn() },
 }));

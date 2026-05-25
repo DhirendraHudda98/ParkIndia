@@ -124,36 +124,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    UserCircle: (props) => <span data-testid="icon-user" {...props}/>,
-    Envelope: (props) => <span data-testid="icon-envelope" {...props}/>,
-    PencilSimple: (props) => <span data-testid="icon-pencil" {...props}/>,
-    FloppyDisk: (props) => <span data-testid="icon-save" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    Lock: (props) => <span data-testid="icon-lock" {...props}/>,
-    CalendarCheck: (props) => <span data-testid="icon-calendar" {...props}/>,
-    House: (props) => <span data-testid="icon-house" {...props}/>,
-    ChartBar: (props) => <span data-testid="icon-chart" {...props}/>,
-    DownloadSimple: (props) => <span data-testid="icon-download" {...props}/>,
-    Trash: (props) => <span data-testid="icon-trash" {...props}/>,
-    CaretDown: (props) => <span data-testid="icon-caret-down" {...props}/>,
-    CaretUp: (props) => <span data-testid="icon-caret-up" {...props}/>,
-    Shield: (props) => <span data-testid="icon-shield" {...props}/>,
-    Warning: (props) => <span data-testid="icon-warning" {...props}/>,
-    ShieldCheck: (props) => <span data-testid="icon-shield-check" {...props}/>,
-    Bell: (props) => <span data-testid="icon-bell" {...props}/>,
-    EnvelopeSimple: (props) => <span data-testid="icon-envelope-simple" {...props}/>,
-    DeviceMobile: (props) => <span data-testid="icon-device-mobile" {...props}/>,
-    ClockCounterClockwise: (props) => <span data-testid="icon-clock" {...props}/>,
-    Desktop: (props) => <span data-testid="icon-desktop" {...props}/>,
-    Globe: (props) => <span data-testid="icon-globe" {...props}/>,
-    ShieldWarning: (props) => <span data-testid="icon-shield-warning" {...props}/>,
-    Check: (props) => <span data-testid="icon-check" {...props}/>,
-    X: (props) => <span data-testid="icon-x" {...props}/>,
-    Palette: (props) => <span data-testid="icon-palette" {...props}/>,
-    MapPin: (props) => <span data-testid="icon-map-pin" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-}));
+
 vi.mock('react-hot-toast', () => ({
     default: {
         success: (...args) => mockToastSuccess(...args),

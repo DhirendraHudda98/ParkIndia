@@ -47,13 +47,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    CarSimple: (props) => <span data-testid="icon-car" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    ArrowLeft: (props) => <span data-testid="icon-arrow-left" {...props}/>,
-    Check: (props) => <span data-testid="icon-check" {...props}/>,
-    X: (props) => <span data-testid="icon-x" {...props}/>,
-}));
+
 import { RegisterPage } from './Register';
 /** Helper: get input by its id (label uses for="reg-*" with aria-hidden asterisk). */
 function getInput(id) {

@@ -61,10 +61,7 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  Check: (props) => <span data-testid="icon-Check" {...props} />,
-  Palette: (props) => <span data-testid="icon-Palette" {...props} />,
-}));
+
 
 import { ProfileThemeSection } from "./ProfileThemeSection";
 

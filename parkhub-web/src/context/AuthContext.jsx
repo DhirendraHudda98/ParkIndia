@@ -1,7 +1,16 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { api, setInMemoryToken } from '../api/client';
+import { api, setInMemoryToken, getInMemoryToken } from '../api/client';
 
 const AuthContext = createContext(null);
+
+// Restore token from localStorage on app load
+function restoreTokenFromStorage() {
+  if (typeof window === 'undefined') return;
+  const stored = localStorage.getItem('parkhub_access_token');
+  if (stored) {
+    setInMemoryToken(stored);
+  }
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -12,6 +21,9 @@ export function AuthProvider({ children }) {
     const timeoutId = window.setTimeout(() => {
       if (!settled) setLoading(false);
     }, 4000);
+
+    // Restore token from localStorage first
+    restoreTokenFromStorage();
 
     api.me().then(res => {
       if (res.success && res.data) setUser(res.data);
@@ -28,7 +40,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    const onUnauthorized = () => setUser(null);
+    const onUnauthorized = () => {
+      setInMemoryToken(null);
+      localStorage.removeItem('parkhub_access_token');
+      setUser(null);
+    };
     window.addEventListener('auth:unauthorized', onUnauthorized);
     return () => window.removeEventListener('auth:unauthorized', onUnauthorized);
   }, []);
@@ -45,7 +61,10 @@ export function AuthProvider({ children }) {
       res.data &&
       res.data.tokens?.access_token
     ) {
-      setInMemoryToken(res.data.tokens.access_token);
+      const token = res.data.tokens.access_token;
+      setInMemoryToken(token);
+      // Persist token to localStorage for page navigation survival
+      localStorage.setItem('parkhub_access_token', token);
       const me = await api.me();
       if (me.success && me.data) {
         setUser(me.data);
@@ -58,6 +77,7 @@ export function AuthProvider({ children }) {
   async function logout() {
     await api.logout();
     setInMemoryToken(null);
+    localStorage.removeItem('parkhub_access_token');
     setUser(null);
   }
 

@@ -24,18 +24,7 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  CalendarCheck: (props) => (
-    <span data-testid="icon-calendar-check" {...props} />
-  ),
-  Car: (props) => <span data-testid="icon-car" {...props} />,
-  UserCircle: (props) => <span data-testid="icon-user" {...props} />,
-  Users: (props) => <span data-testid="icon-users" {...props} />,
-  GearSix: (props) => <span data-testid="icon-gear" {...props} />,
-  Coins: (props) => <span data-testid="icon-coins" {...props} />,
-  Calendar: (props) => <span data-testid="icon-calendar" {...props} />,
-  CalendarPlus: (props) => <span data-testid="icon-calendar-plus" {...props} />,
-}));
+
 
 import { CommandPalette } from "./CommandPalette";
 

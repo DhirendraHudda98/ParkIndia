@@ -58,6 +58,7 @@ const PRIMARY_NAV = [
     shortcut: "P",
   },
   { num: "04", Icon: MapPin, label: "Live map", to: "/map" },
+  { num: "05", Icon: Sparkle, label: "Cluster map", to: "/cluster-map" },
 ];
 
 const WORKSPACE_NAV = [

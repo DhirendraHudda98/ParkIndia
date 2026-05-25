@@ -91,20 +91,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    ArrowLeft: (props) => <span data-testid="icon-arrow-left" {...props}/>,
-    MapPin: (props) => <span data-testid="icon-pin" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    Car: (props) => <span data-testid="icon-car" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    Check: (props) => <span data-testid="icon-check" {...props}/>,
-    Lightning: (props) => <span data-testid="icon-lightning" {...props}/>,
-    Wheelchair: (props) => <span data-testid="icon-wheelchair" {...props}/>,
-    Motorcycle: (props) => <span data-testid="icon-motorcycle" {...props}/>,
-    Star: (props) => <span data-testid="icon-star" {...props}/>,
-    TrendUp: (props) => <span data-testid="icon-trend-up" {...props}/>,
-    TrendDown: (props) => <span data-testid="icon-trend-down" {...props}/>,
-}));
+
 vi.mock('../components/Skeleton', () => ({
     SkeletonCard: ({ height }) => <div data-testid="skeleton-card" className={height}>Loading...</div>,
 }));

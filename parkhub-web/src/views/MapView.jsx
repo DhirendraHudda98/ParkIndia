@@ -5,11 +5,13 @@ import { MapPin, Lightning, Wheelchair, ArrowsClockwise } from '@phosphor-icons/
 import { staggerSlow, fadeUp } from '../constants/animations';
 import { CityFilter } from '../components/CityFilter';
 import { LocationSearch } from '../components/LocationSearch';
+import { api } from '../api/client';
 import { useTheme } from '../context/ThemeContext';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 const MAPPLS_SDK_URL = 'https://apis.mappls.com/advancedmaps/v1';
-const API_BASE = import.meta.env.VITE_API_URL ?? '';
 const MAPPLS_KEY = import.meta.env.VITE_MAPPLS_API_KEY ?? '';
 const REFRESH_INTERVAL_MS = 30_000; // 30 seconds
 
@@ -19,6 +21,28 @@ const MARKER_HEX = {
   red:   '#dc2626',
   gray:  '#6b7280',
 };
+
+function isValidCoordinate(value) {
+  return Number.isFinite(typeof value === 'string' ? Number(value) : value);
+}
+
+function normalizeParkingLots(items) {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((lot) => ({
+      ...lot,
+      latitude: Number(lot.latitude),
+      longitude: Number(lot.longitude),
+    }))
+    .filter((lot) => {
+      const valid = lot.id && lot.name && isValidCoordinate(lot.latitude) && isValidCoordinate(lot.longitude);
+      if (!valid) {
+        console.warn('Skipping invalid parking lot coordinates:', lot);
+      }
+      return valid;
+    });
+}
 
 function formatINR(amount) {
   if (amount === null) return '—';
@@ -50,36 +74,46 @@ function LeafletMapFallback({
   lots,
   selectedLotId,
   onSelectLot,
+  isIndia,
+  clusterEnabled,
 }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef(new Map());
+  const clusterGroupRef = useRef(null);
 
   useEffect(() => {
     if (mapContainerRef.current && !mapRef.current) {
       import('leaflet').then(L => {
-        const map = L.map(mapContainerRef.current, {
-          center: [19.0760, 72.8777],
-          zoom: 12,
-          zoomControl: true,
-        });
+        window.L = L;
+        import('leaflet.markercluster').then(() => {
+          const map = L.map(mapContainerRef.current, {
+            center: [19.0760, 72.8777],
+            zoom: 12,
+            zoomControl: true,
+          });
 
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(pos => {
-            const { latitude, longitude } = pos.coords;
-            map.setView([latitude, longitude], 14);
-            L.marker([latitude, longitude]).addTo(map).bindPopup("<div style='font-weight:600'>📍 You are here</div>");
-          }, () => {}, { timeout: 10000 });
-        }
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-          maxZoom: 19,
-        }).addTo(map);
-        mapRef.current = { map, L };
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+              const { latitude, longitude } = pos.coords;
+              map.setView([latitude, longitude], 14);
+              L.marker([latitude, longitude]).addTo(map).bindPopup("<div style='font-weight:600'>📍 You are here</div>");
+            }, () => {}, { timeout: 10000 });
+          }
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+            maxZoom: 19,
+          }).addTo(map);
+          mapRef.current = { map, L };
+        });
       });
     }
     return () => {
       if (mapRef.current) {
+        if (clusterGroupRef.current) {
+          mapRef.current.map.removeLayer(clusterGroupRef.current);
+          clusterGroupRef.current = null;
+        }
         mapRef.current.map.remove();
         mapRef.current = null;
       }
@@ -90,10 +124,70 @@ function LeafletMapFallback({
     if (!mapRef.current || lots.length === 0) return;
     const { map, L } = mapRef.current;
 
+    if (clusterGroupRef.current) {
+      map.removeLayer(clusterGroupRef.current);
+      clusterGroupRef.current = null;
+    }
+
     markersRef.current.forEach(m => m.remove());
     markersRef.current.clear();
 
+    const bounds = [];
+    let clusterGroup = null;
+
+    if (clusterEnabled && L.markerClusterGroup) {
+      clusterGroup = L.markerClusterGroup({
+        maxClusterRadius: 50,
+        showCoverageOnHover: false,
+        iconCreateFunction: function(cluster) {
+          const childCount = cluster.getChildCount();
+          let color = isIndia ? '#FF9933' : '#10b981';
+          let shadow = isIndia ? 'rgba(255, 153, 51, 0.4)' : 'rgba(16, 185, 129, 0.4)';
+          
+          if (childCount >= 5 && childCount < 15) {
+            color = isIndia ? '#000080' : '#d97706';
+            shadow = isIndia ? 'rgba(0, 0, 128, 0.4)' : 'rgba(217, 119, 6, 0.4)';
+          } else if (childCount >= 15) {
+            color = '#dc2626';
+            shadow = 'rgba(220, 38, 38, 0.4)';
+          }
+
+          return L.divIcon({
+            html: `
+              <div style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                background: ${color};
+                color: white;
+                font-family: 'Inter', sans-serif;
+                font-weight: 800;
+                font-size: 14px;
+                border: 3px solid rgba(255, 255, 255, 0.9);
+                box-shadow: 0 8px 16px ${shadow}, inset 0 2px 4px rgba(255, 255, 255, 0.3);
+              ">
+                ${childCount}
+              </div>
+            `,
+            className: 'custom-cluster-icon-div',
+            iconSize: [42, 42],
+            iconAnchor: [21, 21]
+          });
+        }
+      });
+      clusterGroupRef.current = clusterGroup;
+      map.addLayer(clusterGroup);
+    }
+
     lots.forEach(lot => {
+      if (!isValidCoordinate(lot.latitude) || !isValidCoordinate(lot.longitude)) {
+        console.warn('Skipping invalid parking lot coordinates:', lot);
+        return;
+      }
+
       const hex = MARKER_HEX[lot.color] ?? MARKER_HEX.gray;
       const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='28' height='36'><path d='M14 0C7.4 0 2 5.4 2 12c0 9 12 24 12 24S26 21 26 12C26 5.4 20.6 0 14 0z' fill='${encodeURIComponent(hex)}'/><circle cx='14' cy='12' r='5' fill='white'/></svg>`;
       const icon = L.icon({
@@ -104,15 +198,28 @@ function LeafletMapFallback({
       });
       const pct = lot.total_slots > 0 ? Math.round((lot.available_spots / lot.total_slots) * 100) : 0;
       const marker = L.marker([lot.latitude, lot.longitude], { icon })
-        .addTo(map)
         .bindPopup(`<div style="font-family:Inter,sans-serif;min-width:200px"><strong>${lot.name}</strong><br/><small style="color:#64748b">${lot.address}</small><br/><br/>🅿️ ${lot.available_spots}/${lot.total_slots} free (${pct}%)<br/><a href="/book" style="display:block;margin-top:8px;background:#16a34a;color:#fff;padding:6px;border-radius:6px;text-align:center;text-decoration:none;font-weight:600;font-size:12px">Book Now →</a></div>`)
         .on('click', () => onSelectLot(lot.id));
+
+      if (clusterEnabled && clusterGroup) {
+        clusterGroup.addLayer(marker);
+      } else {
+        marker.addTo(map);
+      }
+
       markersRef.current.set(lot.id, marker);
+      bounds.push([lot.latitude, lot.longitude]);
     });
-  }, [lots, onSelectLot]);
+
+    if (bounds.length === 1) {
+      map.setView(bounds[0], 14);
+    } else if (bounds.length > 1) {
+      map.fitBounds(bounds, { padding: [40, 40] });
+    }
+  }, [lots, onSelectLot, clusterEnabled, isIndia]);
 
   return (
-    <div ref={mapContainerRef} style={{ height: '500px', width: '100%' }} className="bg-surface-100 dark:bg-surface-900 animate-fade-in" />
+    <div ref={mapContainerRef} data-testid="leaflet-map" style={{ height: '500px', width: '100%' }} className="bg-surface-100 dark:bg-surface-900 animate-fade-in" />
   );
 }
 
@@ -128,36 +235,41 @@ export function MapViewPage() {
   const [loading, setLoading] = useState(true);
   const [sdkReady, setSdkReady] = useState(false);
   const [sdkError, setSdkError] = useState(null);
+  const [dataError, setDataError] = useState(null);
   const [selectedLotId, setSelectedLotId] = useState(null);
   const [lastRefreshed, setLastRefreshed] = useState(null);
   const [filterCityName, setFilterCityName] = useState(null);
+  const [clusterEnabled, setClusterEnabled] = useState(true);
 
   const isIndia = designTheme === 'india';
 
-  const fetchAvailability = useCallback(async () => {
+  const fetchParkingLots = useCallback(async () => {
     try {
-      const url = filterCityName
-        ? `${API_BASE}/api/availability?city=${filterCityName}`
-        : `${API_BASE}/api/availability`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('API error');
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        setLots(json.data);
-        setLastRefreshed(new Date());
+      setDataError(null);
+      const response = await api.getParkingLots(filterCityName ? { city: filterCityName } : {});
+      console.log('Parking lots API response:', response);
+
+      if (!response?.success) {
+        throw new Error(response?.error?.message || 'Failed to load parking locations');
       }
-    } catch {
-      // Silently fail on refresh
+
+      const normalizedLots = normalizeParkingLots(response.data);
+      setLots(normalizedLots);
+      setLastRefreshed(new Date());
+    } catch (error) {
+      console.error('Failed to fetch parking locations:', error);
+      setDataError(error.message || 'Failed to load parking locations');
+      setLots([]);
     } finally {
       setLoading(false);
     }
   }, [filterCityName]);
 
   useEffect(() => {
-    fetchAvailability();
-    const interval = setInterval(fetchAvailability, REFRESH_INTERVAL_MS);
+    fetchParkingLots();
+    const interval = setInterval(fetchParkingLots, REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [fetchAvailability]);
+  }, [fetchParkingLots]);
 
   useEffect(() => {
     if (useLeaflet) {
@@ -242,12 +354,18 @@ export function MapViewPage() {
         icon: markerIcon,
         popupHtml,
         popupOptions: { maxWidth: 280 },
+        clusters: clusterEnabled,
+        clustersOptions: {
+          color: "white",
+          bgcolor: isIndia ? "#FF9933" : "#10b981"
+        }
       });
 
       marker.addListener('click', () => setSelectedLotId(lot.id));
       markersRef.current.set(lot.id, marker);
     });
-  }, [lots, sdkReady]);
+  }, [lots, sdkReady, clusterEnabled, isIndia]);
+
 
   const locateMe = useCallback(() => {
     if (!navigator.geolocation) return;
@@ -280,7 +398,7 @@ export function MapViewPage() {
     return (
       <div className="space-y-6">
         <div className="h-10 w-64 skeleton rounded-xl" />
-        <div className="h-[520px] skeleton rounded-2xl" />
+        <div className="h-130 skeleton rounded-2xl" />
       </div>
     );
   }
@@ -305,6 +423,11 @@ export function MapViewPage() {
           : 'border-emerald-200 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.15),transparent_40%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(240,253,250,0.95))] dark:border-emerald-900/60 dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_38%),linear-gradient(135deg,rgba(22,26,34,0.98),rgba(31,41,55,0.94))]'
         }`}
       >
+        {dataError && (
+          <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            {dataError}
+          </div>
+        )}
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
             <div className={`mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${
@@ -348,7 +471,7 @@ export function MapViewPage() {
               />
             </div>
           </div>
-          <div className={`rounded-[24px] border p-5 ${isIndia ? 'border-[#FF9933]/20 bg-white/80 dark:bg-white/[0.04]' : 'border-emerald-100 bg-white/80 dark:border-white/10 dark:bg-white/[0.04]'}`}>
+          <div className={`rounded-3xl border p-5 ${isIndia ? 'border-[#FF9933]/20 bg-white/80 dark:bg-white/4' : 'border-emerald-100 bg-white/80 dark:border-white/10 dark:bg-white/4'}`}>
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-surface-500 dark:text-white/45">Legend</p>
             <div className="mt-3 space-y-2">
               <LegendChip color={MARKER_HEX.green} label="> 50% spots free" />
@@ -369,7 +492,7 @@ export function MapViewPage() {
       <div className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
         <motion.div
           variants={fadeUp}
-          className="overflow-hidden rounded-[24px] border border-surface-200 bg-white shadow-[0_18px_50px_-38px_rgba(15,23,42,0.18)] dark:border-surface-800 dark:bg-surface-950/80"
+          className="overflow-hidden rounded-3xl border border-surface-200 bg-white shadow-[0_18px_50px_-38px_rgba(15,23,42,0.18)] dark:border-surface-800 dark:bg-surface-950/80"
         >
           <div className="flex items-center justify-between border-b border-surface-200 px-5 py-4 dark:border-surface-800">
             <div>
@@ -390,6 +513,21 @@ export function MapViewPage() {
               >
                 📍 Locate Me
               </button>
+              <button
+                type="button"
+                onClick={() => setClusterEnabled(prev => !prev)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition-all duration-300 flex items-center gap-1.5 ${
+                  clusterEnabled
+                    ? isIndia 
+                      ? 'border-[#FF9933] bg-[#FF9933]/10 text-[#FF9933]' 
+                      : 'border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                    : isIndia
+                      ? 'border-surface-200 bg-white text-surface-500 hover:border-[#FF9933]/50 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-400'
+                      : 'border-surface-200 bg-white text-surface-500 hover:border-emerald-300 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-400'
+                }`}
+              >
+                🌌 {clusterEnabled ? 'Clusters: On' : 'Clusters: Off'}
+              </button>
               <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${
                 isIndia ? 'bg-[#FF9933]/10 text-[#FF9933]' : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
               }`}>
@@ -404,16 +542,20 @@ export function MapViewPage() {
               lots={lots}
               selectedLotId={selectedLotId}
               onSelectLot={setSelectedLotId}
+              isIndia={isIndia}
+              clusterEnabled={clusterEnabled}
             />
           ) : (
+
             <>
               <div
                 ref={mapContainerRef}
+                data-testid="leaflet-map"
                 style={{ height: '500px', width: '100%' }}
                 className="bg-surface-100 dark:bg-surface-900"
               />
               {!sdkReady && (
-                <div className="flex h-[500px] items-center justify-center bg-surface-50 dark:bg-surface-900" style={{ marginTop: '-500px' }}>
+                <div className="flex h-125 items-center justify-center bg-surface-50 dark:bg-surface-900" style={{ marginTop: '-500px' }}>
                   <div className="text-center">
                     <div className={`mx-auto h-10 w-10 animate-spin rounded-full border-2 ${isIndia ? 'border-[#FF9933]' : 'border-emerald-500'} border-t-transparent`} />
                     <p className="mt-3 text-sm text-surface-500">Loading Map SDK…</p>
@@ -425,42 +567,48 @@ export function MapViewPage() {
         </motion.div>
 
         <motion.div variants={fadeUp} className="space-y-4">
-          <div className="rounded-[24px] border border-surface-200 bg-white p-5 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.18)] dark:border-surface-800 dark:bg-surface-950/80">
+          <div className="rounded-3xl border border-surface-200 bg-white p-5 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.18)] dark:border-surface-800 dark:bg-surface-950/80">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-surface-500 dark:text-surface-400">All Locations</p>
-            <div className="mt-4 space-y-2 overflow-y-auto max-h-[300px] pr-1 scrollbar-thin">
-              {lots.map(lot => (
-                <button
-                  key={lot.id}
-                  type="button"
-                  onClick={() => setSelectedLotId(lot.id)}
-                  className={`w-full rounded-[18px] border px-4 py-3 text-left transition-colors ${
-                    selectedLotId === lot.id
-                      ? isIndia ? 'border-[#FF9933] bg-[#FF9933]/5' : 'border-emerald-400 bg-emerald-50 dark:border-emerald-500/60 dark:bg-emerald-500/10'
-                      : 'border-surface-200 bg-surface-50/80 hover:border-emerald-300 dark:border-surface-800 dark:bg-surface-900/60'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-surface-900 dark:text-white">{lot.name}</p>
-                      <p className="mt-0.5 truncate text-xs text-surface-500 dark:text-surface-400">{lot.city}</p>
+            <div className="mt-4 space-y-2 overflow-y-auto max-h-75 pr-1 scrollbar-thin">
+              {lots.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-surface-300 bg-surface-50 px-4 py-8 text-center text-sm text-surface-500 dark:border-surface-700 dark:bg-surface-900/40 dark:text-surface-400">
+                  No parking locations available
+                </div>
+              ) : (
+                lots.map(lot => (
+                  <button
+                    key={lot.id}
+                    type="button"
+                    onClick={() => setSelectedLotId(lot.id)}
+                    className={`w-full rounded-[18px] border px-4 py-3 text-left transition-colors ${
+                      selectedLotId === lot.id
+                        ? isIndia ? 'border-[#FF9933] bg-[#FF9933]/5' : 'border-emerald-400 bg-emerald-50 dark:border-emerald-500/60 dark:bg-emerald-500/10'
+                        : 'border-surface-200 bg-surface-50/80 hover:border-emerald-300 dark:border-surface-800 dark:bg-surface-900/60'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-surface-900 dark:text-white">{lot.name}</p>
+                        <p className="mt-0.5 truncate text-xs text-surface-500 dark:text-surface-400">{lot.city}</p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ background: MARKER_HEX[lot.color] ?? MARKER_HEX.gray }}
+                        />
+                        <span className="font-mono text-xs font-semibold text-surface-700 dark:text-surface-300">
+                          {lot.available_spots}/{lot.total_slots}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                      <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ background: MARKER_HEX[lot.color] ?? MARKER_HEX.gray }}
-                      />
-                      <span className="font-mono text-xs font-semibold text-surface-700 dark:text-surface-300">
-                        {lot.available_spots}/{lot.total_slots}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))
+              )}
             </div>
           </div>
 
           {selectedLot && (
-            <div className="rounded-[24px] border border-surface-200 bg-white p-5 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.18)] dark:border-surface-800 dark:bg-surface-950/80">
+            <div className="rounded-3xl border border-surface-200 bg-white p-5 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.18)] dark:border-surface-800 dark:bg-surface-950/80">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-surface-500 dark:text-surface-400">Selected</p>
@@ -503,10 +651,10 @@ function StatCard({ label, value, sub, isIndia, accent = false }) {
     <div className={`rounded-[22px] border px-4 py-4 ${
       accent 
       ? isIndia ? 'border-[#FF9933]/30 bg-[#FF9933]/10' : 'border-emerald-200 bg-emerald-500/10 dark:border-emerald-900/60' 
-      : 'border-white/80 bg-white/85 dark:border-white/10 dark:bg-white/[0.04]'
+      : 'border-white/80 bg-white/85 dark:border-white/10 dark:bg-white/4'
     }`}>
       <p className={`text-[11px] font-semibold uppercase tracking-[0.2em] ${accent ? isIndia ? 'text-[#FF9933]' : 'text-emerald-700 dark:text-emerald-300' : 'text-surface-500 dark:text-white/45'}`}>{label}</p>
-      <p className="mt-3 text-3xl font-black tracking-[-0.05em] text-surface-900 dark:text-white">{value}</p>
+      <p className="mt-3 text-3xl font-black tracking-tighter text-surface-900 dark:text-white">{value}</p>
       <p className="mt-1 text-xs text-surface-500 dark:text-surface-400">{sub}</p>
     </div>
   );
@@ -515,7 +663,7 @@ function StatCard({ label, value, sub, isIndia, accent = false }) {
 function LegendChip({ label, color }) {
   return (
     <div className="flex items-center gap-2 text-xs text-surface-600 dark:text-surface-300">
-      <span className="h-3 w-3 flex-shrink-0 rounded-full border border-white/50 shadow-sm" style={{ background: color }} />
+      <span className="h-3 w-3 shrink-0 rounded-full border border-white/50 shadow-sm" style={{ background: color }} />
       {label}
     </div>
   );

@@ -14,11 +14,7 @@ vi.mock('react-i18next', () => ({
         },
     }),
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    BookOpen: (props) => <span data-testid="icon-book" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-    ArrowSquareOut: (props) => <span data-testid="icon-external" {...props}/>,
-}));
+
 // Inline component that represents the API docs admin sidebar link
 function ApiDocsLink() {
     const { t } = useTranslation();

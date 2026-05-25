@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\GuestBookingController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\LotController;
 use App\Http\Controllers\Api\MetricsController;
+use App\Http\Controllers\Api\MapController;
 use App\Http\Controllers\Api\MiscController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\ParkingAvailabilityController;
@@ -42,6 +43,8 @@ Route::middleware('throttle:60,1')->prefix('availability')->group(function () {
     Route::get('/city/{city}', [ParkingAvailabilityController::class, 'byCity']); // by city
     Route::get('/{lotId}', [ParkingAvailabilityController::class, 'show']);    // single lot
 });
+
+Route::get('/parking-lots', [MapController::class, 'index']);
 
 // ── ParkIndia: Indian Cities & States (public) ───────────────────────────────
 Route::middleware('throttle:60,1')->prefix('cities')->group(function () {

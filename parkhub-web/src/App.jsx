@@ -82,17 +82,16 @@ const AdminPluginsPage = lazy(() => import('./views/AdminPlugins'), 'AdminPlugin
 const AdminCompliancePage = lazy(() => import('./views/AdminCompliance'), 'AdminCompliancePage', '/admin/compliance');
 const AdminSSOPage = lazy(() => import('./views/AdminSSO'), 'AdminSSOPage', '/admin/sso');
 const AdminWebhooksPage = lazy(() => import('./views/AdminWebhooks'), 'AdminWebhooksPage', '/admin/webhooks');
-const AdminRolesPage = lazy(() => import('./views/AdminRoles'), 'AdminRolesPage', '/admin/roles');
-const AdminZonesPage = lazy(() => import('./views/AdminZones'), 'AdminZonesPage', '/admin/zones');
 const AdminUpdatesPage = lazy(() => import('./views/AdminUpdates'), 'AdminUpdatesPage', '/admin/updates');
 
 // New feature pages
-const SwapRequestsPage = lazy(() => import('./views/SwapRequests'), 'SwapRequestsPage', '/swap-requests');
+
 const QRCheckInPage = lazy(() => import('./views/QRCheckIn'), 'QRCheckInPage', '/checkin');
 const GuestPassPage = lazy(() => import('./views/GuestPass'), 'GuestPassPage', '/guest-pass');
 const OccupancyHeatmapPage = lazy(() => import('./views/OccupancyHeatmap'), 'OccupancyHeatmapPage', '/admin/heatmap');
 const TeamLeaderboardPage = lazy(() => import('./views/TeamLeaderboard'), 'TeamLeaderboardPage', '/leaderboard');
 const OccupancyPredictionPage = lazy(() => import('./views/OccupancyPrediction'), 'OccupancyPredictionPage', '/predict');
+const ParkingClusterMapPage = lazy(() => import('./components/ParkingClusterMap'), 'ParkingClusterMap', '/cluster-map');
 
 // Scheduled reports page
 const AdminScheduledReportsPage = (() => {
@@ -239,6 +238,7 @@ function ViewTransitionRoutes() {
         <Route path="history" element={<SuspenseRoute><ParkingHistoryPage /></SuspenseRoute>} />
         <Route path="absence-approval" element={<SuspenseRoute><AbsenceApprovalPage /></SuspenseRoute>} />
         <Route path="map" element={<SuspenseRoute><MapViewPage /></SuspenseRoute>} />
+        <Route path="cluster-map" element={<SuspenseRoute><ParkingClusterMapPage /></SuspenseRoute>} />
         <Route path="checkin" element={<SuspenseRoute><QRCheckInPage /></SuspenseRoute>} />
         <Route path="predict" element={<SuspenseRoute><OccupancyPredictionPage /></SuspenseRoute>} />
         <Route path="translations" element={<Navigate to="/" replace />} />
@@ -268,8 +268,6 @@ function ViewTransitionRoutes() {
           <Route path="compliance" element={<SuspenseRoute><AdminCompliancePage /></SuspenseRoute>} />
           <Route path="sso" element={<SuspenseRoute><AdminSSOPage /></SuspenseRoute>} />
           <Route path="webhooks" element={<SuspenseRoute><AdminWebhooksPage /></SuspenseRoute>} />
-          <Route path="roles" element={<SuspenseRoute><AdminRolesPage /></SuspenseRoute>} />
-          <Route path="zones" element={<SuspenseRoute><AdminZonesPage /></SuspenseRoute>} />
           <Route path="updates" element={<SuspenseRoute><AdminUpdatesPage /></SuspenseRoute>} />
           <Route path="heatmap" element={<SuspenseRoute><OccupancyHeatmapPage /></SuspenseRoute>} />
           <Route path="scheduled-reports" element={<SuspenseRoute><AdminScheduledReportsPage /></SuspenseRoute>} />

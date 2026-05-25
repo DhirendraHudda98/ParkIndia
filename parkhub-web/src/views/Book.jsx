@@ -14,6 +14,7 @@ import { useNavLayout } from '../hooks/useNavLayout';
 import { useTheme } from '../context/ThemeContext';
 import { echo } from '../lib/echo';
 import ParkingMap from '../components/ParkingMap';
+import { ParkingClusterMap } from '../components/ParkingClusterMap';
 
 const DURATIONS = [
   { label: '1h', hours: 1 },
@@ -41,6 +42,8 @@ export function BookPage() {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [dynamicPrice, setDynamicPrice] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState('');
+  const [favoritesSet, setFavoritesSet] = useState(new Set());
+  const [favPending, setFavPending] = useState(new Set());
   const [startDate, setStartDate] = useState(() => {
     const now = new Date();
     now.setMinutes(0, 0, 0);
@@ -104,6 +107,54 @@ export function BookPage() {
       }
     }
   }, []);
+
+  // Load user favorites for slot-level favorite toggles
+  useEffect(() => {
+    let mounted = true;
+    api.getFavorites().then((res) => {
+      if (!mounted) return;
+      if (res.success && res.data) {
+        setFavoritesSet(new Set(res.data.map((f) => f.slot_id)));
+      }
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
+  async function toggleFavorite(slot) {
+    const slotId = slot.id;
+    if (favPending?.has(slotId)) return;
+    setFavPending((p) => new Set(p).add(slotId));
+
+    if (favoritesSet.has(slotId)) {
+      // remove
+      const res = await api.removeFavorite(slotId);
+      if (res.success) {
+        setFavoritesSet((p) => {
+          const n = new Set(p);
+          n.delete(slotId);
+          return n;
+        });
+        toast.success(t('favorites.removed'));
+      } else {
+        toast.error(res.error?.message || t('common.error'));
+      }
+    } else {
+      // add
+      const res = await api.addFavorite(slotId, selectedLot?.id || slot.lot_id);
+      if (res.success) {
+        setFavoritesSet((p) => new Set(p).add(slotId));
+        toast.success(t('favorites.added'));
+      } else {
+        toast.error(res.error?.message || t('common.error'));
+      }
+    }
+
+    setFavPending((p) => {
+      const n = new Set(p);
+      n.delete(slotId);
+      return n;
+    });
+  }
 
   const DAYS_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -344,6 +395,9 @@ export function BookPage() {
               t={t}
               isIndia={isIndia}
               isVoid={isVoid}
+              favoritesSet={favoritesSet}
+              favPending={favPending}
+              toggleFavorite={toggleFavorite}
             />
           </motion.div>
         )}
@@ -457,6 +511,7 @@ function StepSelectLot({ lots, loading, onSelect, t, isIndia }) {
   const [cityFilter, setCityFilter] = useState(null);
   const [maxPrice, setMaxPrice] = useState(1000);
   const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [mapProvider, setMapProvider] = useState('leaflet');
   const featuredCities = ['Delhi', 'Mumbai', 'Bangalore', 'Jalandhar', 'Chandigarh', 'Ludhiana', 'Amritsar'];
   const listRef = useRef(null);
 
@@ -577,7 +632,40 @@ function StepSelectLot({ lots, loading, onSelect, t, isIndia }) {
         </div>
 
         <div className="w-full relative z-0">
-           <ParkingMap onSelectLot={handleMapSelect} />
+          <div className="flex justify-between items-center mb-4">
+            <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] ${isIndia ? 'text-[#000080]' : 'text-primary-500'}`}>Map View Option</h4>
+            <div className="flex gap-1.5 p-1 bg-surface-100 dark:bg-white/5 rounded-xl border border-surface-200 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => setMapProvider('leaflet')}
+                className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
+                  mapProvider === 'leaflet'
+                    ? 'bg-emerald-500 text-white shadow-md'
+                    : 'text-surface-600 dark:text-slate-400 hover:text-surface-900 dark:hover:text-white'
+                }`}
+              >
+                Leaflet Cluster Map
+              </button>
+              <button
+                type="button"
+                onClick={() => setMapProvider('google')}
+                className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
+                  mapProvider === 'google'
+                    ? 'bg-[#FF9933] text-white shadow-md'
+                    : 'text-surface-600 dark:text-slate-400 hover:text-surface-900 dark:hover:text-white'
+                }`}
+              >
+                Google Map
+              </button>
+            </div>
+          </div>
+          {mapProvider === 'leaflet' ? (
+            <div className="rounded-3xl overflow-hidden border border-surface-200 dark:border-white/10 shadow-2xl h-[650px] relative z-0">
+              <ParkingClusterMap onSelectLot={handleMapSelect} lots={lots} fullScreen={false} />
+            </div>
+          ) : (
+            <ParkingMap onSelectLot={handleMapSelect} />
+          )}
         </div>
 
         <RecommendationsSection lots={lots} onSelect={onSelect} t={t} isIndia={isIndia} />
@@ -677,7 +765,7 @@ function StepSelectLot({ lots, loading, onSelect, t, isIndia }) {
 
 const SLOT_ICON = { electric: Lightning, handicap: Wheelchair, motorcycle: Motorcycle, vip: Star };
 
-function StepSelectSlot({ lot, slots, loading, selectedSlot, onSelectSlot, startDate, onStartDateChange, duration, onDurationChange, vehicles, selectedVehicle, onVehicleChange, onContinue, t, isIndia, isVoid }) {
+function StepSelectSlot({ lot, slots, loading, selectedSlot, onSelectSlot, startDate, onStartDateChange, duration, onDurationChange, vehicles, selectedVehicle, onVehicleChange, onContinue, t, isIndia, isVoid, favoritesSet, favPending, toggleFavorite }) {
   const available = slots.filter(s => s.status === 'available');
   const start = new Date(startDate);
   const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
@@ -782,8 +870,17 @@ function StepSelectSlot({ lot, slots, loading, selectedSlot, onSelectSlot, start
                         }`}
                       >
                         {s.slot_number}
-                        {Icon && <Icon weight="bold" className={`absolute right-2 top-2 h-3.5 w-3.5 ${active ? 'opacity-100' : 'opacity-40'}`} />}
-                        {s.is_accessible && !Icon && <Wheelchair weight="bold" className={`absolute right-2 top-2 h-3.5 w-3.5 ${active ? 'opacity-100' : 'opacity-40 text-blue-500'}`} />}
+                            {Icon && <Icon weight="bold" className={`absolute right-2 top-2 h-3.5 w-3.5 ${active ? 'opacity-100' : 'opacity-40'}`} />}
+                            {s.is_accessible && !Icon && <Wheelchair weight="bold" className={`absolute right-2 top-2 h-3.5 w-3.5 ${active ? 'opacity-100' : 'opacity-40 text-blue-500'}`} />}
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); toggleFavorite(s); }}
+                              disabled={favPending?.has(s.id)}
+                              aria-label={favoritesSet.has(s.id) ? `Remove ${s.slot_number} from favorites` : `Add ${s.slot_number} to favorites`}
+                              className={`absolute left-2 top-2 rounded-full p-1 transition-colors ${isVoid ? 'text-slate-300 hover:bg-white/[0.04]' : isIndia ? 'text-[#FF9933] hover:bg-[#FF9933]/5' : 'text-surface-400 hover:bg-surface-50'}`}
+                            >
+                              {favoritesSet.has(s.id) ? <Star weight="fill" className="h-4 w-4" /> : <Star weight="regular" className="h-4 w-4" />}
+                            </button>
                       </motion.button>
                     );
                   })}
@@ -855,7 +952,7 @@ function StepConfirm({ lot, slot, start, end, duration, estimatedCost, vehicle, 
         <div className="divide-y divide-surface-100">
           <SummaryRow label="Lot" value={lot.name} />
           <SummaryRow label="Slot" value={slot.slot_number} />
-          <SummaryRow label="Total" value={`${currency}${estimatedCost}`} bold />
+          <SummaryRow label="Total" value={estimatedCost ? `${currency}${estimatedCost}` : '—'} bold />
         </div>
         <button onClick={onConfirm} disabled={submitting} className={`btn btn-primary mt-6 w-full font-bold uppercase tracking-widest ${isIndia ? 'bg-[#000080] hover:bg-[#000066]' : ''}`}>
           {submitting ? <SpinnerGap className="animate-spin h-5 w-5 mx-auto" /> : t('book.confirm')}

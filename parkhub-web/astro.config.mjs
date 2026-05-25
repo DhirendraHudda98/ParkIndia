@@ -55,7 +55,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     resolve: {
-      dedupe: ['react', 'react-dom', 'react-router-dom'],
+      dedupe: ['react-router-dom'],
     },
     ssr: {
       noExternal: [/^@fontsource/, /^@fontsource-variable/, 'mappls-web-maps', '@phosphor-icons/react'],

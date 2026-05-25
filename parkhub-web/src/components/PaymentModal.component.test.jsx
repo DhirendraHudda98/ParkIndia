@@ -31,14 +31,7 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
 }));
 
-vi.mock("@phosphor-icons/react", () => ({
-  CreditCard: (props) => <span data-testid="icon-card" {...props} />,
-  X: (props) => <span data-testid="icon-x" {...props} />,
-  Lock: (props) => <span data-testid="icon-lock" {...props} />,
-  SpinnerGap: (props) => <span data-testid="icon-spinner" {...props} />,
-  CheckCircle: (props) => <span data-testid="icon-check" {...props} />,
-  WarningCircle: (props) => <span data-testid="icon-warning" {...props} />,
-}));
+
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({

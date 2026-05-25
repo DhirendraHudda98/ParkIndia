@@ -38,16 +38,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    ArrowsClockwise: (props) => <span data-testid="icon-arrows-clockwise" {...props}/>,
-    CheckCircle: (props) => <span data-testid="icon-check" {...props}/>,
-    Warning: (props) => <span data-testid="icon-warning" {...props}/>,
-    CloudArrowDown: (props) => <span data-testid="icon-cloud" {...props}/>,
-    Info: (props) => <span data-testid="icon-info" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    Spinner: (props) => <span data-testid="icon-spinner" {...props}/>,
-    ArrowRight: (props) => <span data-testid="icon-arrow-right" {...props}/>,
-}));
+
 vi.mock('../api/client', () => ({
     getInMemoryToken: () => 'test-token',
 }));

@@ -59,14 +59,7 @@ vi.mock('framer-motion', () => ({
         section: React.forwardRef(({ children, variants, initial, animate, exit, transition, ...props }, ref) => (<section ref={ref} {...props}>{children}</section>)),
     },
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Coins: (props) => <span data-testid="icon-coins" {...props}/>,
-    ArrowDown: (props) => <span data-testid="icon-arrow-down" {...props}/>,
-    ArrowUp: (props) => <span data-testid="icon-arrow-up" {...props}/>,
-    ArrowClockwise: (props) => <span data-testid="icon-clockwise" {...props}/>,
-    TrendUp: (props) => <span data-testid="icon-trend-up" {...props}/>,
-    Sparkle: (props) => <span data-testid="icon-sparkle" {...props}/>,
-}));
+
 vi.mock('../constants/animations', () => ({
     staggerSlow: { hidden: {}, show: {} },
     fadeUp: { hidden: {}, show: {} },

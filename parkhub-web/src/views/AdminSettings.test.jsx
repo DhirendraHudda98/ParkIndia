@@ -20,10 +20,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    Check: (props) => <span data-testid="icon-check" {...props}/>,
-}));
+
 vi.mock('react-hot-toast', () => ({
     default: { success: (...args) => mockToastSuccess(...args), error: (...args) => mockToastError(...args) },
 }));

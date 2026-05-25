@@ -5,10 +5,7 @@ import { render, screen } from '@testing-library/react';
 vi.mock('react-router-dom', () => ({
     Link: ({ to, children, ...props }) => <a href={to} {...props}>{children}</a>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    CarSimple: (props) => <span data-testid="icon-car" {...props}/>,
-    ArrowLeft: (props) => <span data-testid="icon-arrow-left" {...props}/>,
-}));
+
 import { NotFoundPage } from './NotFound';
 describe('NotFoundPage', () => {
     it('renders 404 text', () => {

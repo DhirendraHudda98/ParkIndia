@@ -89,22 +89,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    CalendarBlank: (props) => <span data-testid="icon-calendar" {...props}/>,
-    Clock: (props) => <span data-testid="icon-clock" {...props}/>,
-    Car: (props) => <span data-testid="icon-car" {...props}/>,
-    X: (props) => <span data-testid="icon-x" {...props}/>,
-    SpinnerGap: (props) => <span data-testid="icon-spinner" {...props}/>,
-    ArrowClockwise: (props) => <span data-testid="icon-refresh" {...props}/>,
-    Warning: (props) => <span data-testid="icon-warning" {...props}/>,
-    MapPin: (props) => <span data-testid="icon-pin" {...props}/>,
-    CalendarPlus: (props) => <span data-testid="icon-cal-plus" {...props}/>,
-    Timer: (props) => <span data-testid="icon-timer" {...props}/>,
-    MagnifyingGlass: (props) => <span data-testid="icon-search" {...props}/>,
-    Funnel: (props) => <span data-testid="icon-funnel" {...props}/>,
-    QrCode: (props) => <span data-testid="icon-qrcode" {...props}/>,
-    FilePdf: (props) => <span data-testid="icon-pdf" {...props}/>,
-}));
+
 vi.mock('../components/Skeleton', () => ({
     BookingsSkeleton: () => <div data-testid="bookings-skeleton">Loading...</div>,
 }));

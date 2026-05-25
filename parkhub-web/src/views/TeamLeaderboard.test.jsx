@@ -34,16 +34,7 @@ vi.mock('framer-motion', () => ({
         div: React.forwardRef(({ children, initial, animate, exit, transition, variants, ...props }, ref) => (<div ref={ref} {...props}>{children}</div>)),
     },
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    Trophy: (props) => <span data-testid="icon-trophy" {...props}/>,
-    Medal: (props) => <span data-testid="icon-medal" {...props}/>,
-    Lightning: (props) => <span data-testid="icon-lightning" {...props}/>,
-    UserCircle: (props) => <span data-testid="icon-user" {...props}/>,
-    Star: (props) => <span data-testid="icon-star" {...props}/>,
-    Sun: (props) => <span data-testid="icon-sun" {...props}/>,
-    UsersThree: (props) => <span data-testid="icon-users" {...props}/>,
-    Car: (props) => <span data-testid="icon-car" {...props}/>,
-}));
+
 vi.mock('../constants/animations', () => ({
     staggerSlow: { hidden: { opacity: 0 }, show: { opacity: 1 } },
     fadeUp: { hidden: { opacity: 0 }, show: { opacity: 1 } },

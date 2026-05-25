@@ -9,6 +9,22 @@ vi.mock('../../api/client', () => ({
         updateLobbyConfig: (...a) => mockUpdate(...a),
     },
 }));
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key, fallback) => {
+            const keys = {
+                'lobby.showClock': 'Uhr anzeigen',
+                'lobby.screens.queue': 'Warteschlange',
+                'lobby.screens.map': 'Karte',
+                'lobby.screens.announcements': 'Ankündigungen',
+                'lobby.screens.welcome': 'Willkommen',
+                'common.error': 'Fehler beim Laden',
+                'common.saved': 'Lobby aktualisiert',
+            };
+            return keys[key] || fallback || key;
+        },
+    }),
+}));
 const mockToast = vi.fn();
 vi.mock('../Toast', () => ({
     useV5Toast: () => mockToast,

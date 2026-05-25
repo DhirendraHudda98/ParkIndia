@@ -172,8 +172,6 @@ vi.mock('./views/ApiVersion', () => ({ ApiVersionPage: stub('api-version') }));
 vi.mock('./views/Geofence', () => ({ GeofencePage: stub('geofence') }));
 vi.mock('./views/Waitlist', () => ({ WaitlistPage: stub('waitlist') }));
 vi.mock('./views/ParkingPassView', () => ({ ParkingPassViewPage: stub('parking-pass-view') }));
-// Stub global fetch for useThemeLoader
-vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: false })));
 import { App } from './App';
 describe('App', () => {
     beforeEach(() => {
@@ -182,6 +180,8 @@ describe('App', () => {
         mockUser.loading = false;
         // Mark welcome as seen to get /login redirect instead of /welcome
         localStorageMock.setItem('parkhub_welcome_seen', 'true');
+        // Stub global fetch for useThemeLoader
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: false })));
     });
     afterEach(() => {
         vi.restoreAllMocks();
@@ -338,7 +338,7 @@ describe('App', () => {
     it('calls theme API on mount', async () => {
         render(<App />);
         await waitFor(() => {
-            expect(globalThis.fetch).toHaveBeenCalledWith('/api/v1/theme', expect.objectContaining({ credentials: 'include' }));
+            expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/v1/theme'), expect.objectContaining({ credentials: 'include' }));
         });
     });
     it('applies use case theme from API response', async () => {
@@ -365,7 +365,7 @@ describe('App', () => {
         })));
         render(<App />);
         await waitFor(() => {
-            expect(globalThis.fetch).toHaveBeenCalledWith('/api/v1/theme', expect.objectContaining({ credentials: 'include' }));
+            expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/v1/theme'), expect.objectContaining({ credentials: 'include' }));
         }, { timeout: 4500 });
         // Should not crash — no dataset.usecase set when no key returned
         // The dataset may or may not still be set from a prior test in same process,
@@ -420,7 +420,7 @@ describe('App', () => {
         ['/favorites', 'page-favorites'],
         ['/absences', 'page-absences'],
         ['/profile', 'page-profile'],
-        ['/team', 'page-team'],
+        ['/team', 'page-dashboard'], // Redirected
         ['/notifications', 'page-notifications'],
         ['/calendar', 'page-calendar'],
         ['/visitors', 'page-visitors'],
@@ -428,12 +428,12 @@ describe('App', () => {
         ['/history', 'page-history'],
         ['/absence-approval', 'page-absence-approval'],
         ['/map', 'page-map'],
-        ['/swap-requests', 'page-swap-requests'],
+        ['/swap-requests', 'page-dashboard'], // Redirected
         ['/checkin', 'page-checkin'],
-        ['/guest-pass', 'page-guest-pass'],
-        ['/leaderboard', 'page-leaderboard'],
+        ['/guest-pass', 'page-dashboard'], // Redirected
+        ['/leaderboard', 'page-dashboard'], // Redirected
         ['/predict', 'page-predict'],
-        ['/translations', 'page-translations'],
+        ['/translations', 'page-dashboard'], // Redirected
         ['/settings', 'page-settings'],
     ];
     for (const [route, testid] of userRoutes) {
@@ -454,7 +454,7 @@ describe('App', () => {
         ['/admin/lots', 'page-admin-lots'],
         ['/admin/announcements', 'page-admin-announcements'],
         ['/admin/reports', 'page-admin-reports'],
-        ['/admin/translations', 'page-admin-translations'],
+        ['/admin/translations', 'page-dashboard'], // Redirected
         ['/admin/analytics', 'page-admin-analytics'],
         ['/admin/rate-limits', 'page-admin-rate-limits'],
         ['/admin/tenants', 'page-admin-tenants'],
@@ -472,8 +472,6 @@ describe('App', () => {
         ['/admin/compliance', 'page-admin-compliance'],
         ['/admin/sso', 'page-admin-sso'],
         ['/admin/webhooks', 'page-admin-webhooks'],
-        ['/admin/roles', 'page-admin-roles'],
-        ['/admin/zones', 'page-admin-zones'],
         ['/admin/updates', 'page-admin-updates'],
         ['/admin/heatmap', 'page-admin-heatmap'],
         ['/admin/scheduled-reports', 'page-admin-scheduled-reports'],

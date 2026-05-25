@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ChartBar, GearSix, Users, Megaphone, ChartLine, MapPin, Translate, PresentationChart, Gauge,
   Buildings, ClockCounterClockwise, Database, Car, Wheelchair, Wrench, CurrencyDollar, UserPlus, Lightning,
-  PuzzlePiece, GraphicsCard, ShieldCheck, LockKey, MapTrifold, ArrowsClockwise,
+  PuzzlePiece, GraphicsCard, ShieldCheck, ArrowsClockwise,
 } from '@phosphor-icons/react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -21,7 +21,7 @@ function AdminNav() {
         { name: t('admin.overview'), path: '/admin', icon: ChartBar },
         { name: t('admin.users'), path: '/admin/users', icon: Users },
         { name: t('admin.lots'), path: '/admin/lots', icon: MapPin },
-        { name: t('parkingZones.title', 'Zones'), path: '/admin/zones', icon: MapTrifold },
+        { name: t('admin.announcements', 'Announcements'), path: '/admin/announcements', icon: Megaphone },
       ]
     },
     {
@@ -37,12 +37,6 @@ function AdminNav() {
       items: [
         { name: t('admin.reports'), path: '/admin/reports', icon: ChartLine },
         { name: 'Analytics', path: '/admin/analytics', icon: PresentationChart },
-      ]
-    },
-    {
-      title: 'Governance',
-      items: [
-        { name: t('rbac.title', 'Roles'), path: '/admin/roles', icon: LockKey },
       ]
     }
   ];
@@ -132,14 +126,13 @@ export function AdminPage() {
             <div className="mt-5 flex flex-wrap gap-3">
               <AdminHeroStat label={t('admin.users')} value="24" isVoid={isVoid} isIndia={isIndia} />
               <AdminHeroStat label={t('admin.lots')} value="6" isVoid={isVoid} isIndia={isIndia} />
-              <AdminHeroStat label={t('parkingZones.title', 'Zones')} value="12" isVoid={isVoid} isIndia={isIndia} />
               <AdminHeroStat label={t('admin.rateLimits', 'Rate Limits')} value="stable" isVoid={isVoid} isIndia={isIndia} />
             </div>
           </div>
-          <div className={`rounded-[24px] border p-4 transition-colors ${
+          <div className={`rounded-3xl border p-4 transition-colors ${
             isVoid
-              ? 'border-white/10 bg-white/[0.04]'
-              : isIndia ? 'border-[#FF9933]/10 bg-white/50 shadow-sm' : 'border-white/80 bg-white/80 dark:border-white/10 dark:bg-white/[0.04]'
+              ? 'border-white/10 bg-white/4'
+              : isIndia ? 'border-[#FF9933]/10 bg-white/50 shadow-sm' : 'border-white/80 bg-white/80 dark:border-white/10 dark:bg-white/4'
           }`}>
             <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${isVoid ? 'text-white/45' : isIndia ? 'text-[#000080]/40' : 'text-surface-500 dark:text-white/45'}`}>Operational focus</p>
             <div className="mt-4 space-y-3">
@@ -150,8 +143,8 @@ export function AdminPage() {
               ].map(item => (
                 <div key={item.label} className={`rounded-2xl border px-4 py-3 transition-colors ${
                   isVoid
-                    ? 'border-white/10 bg-white/[0.03]'
-                    : isIndia ? 'border-[#FF9933]/10 bg-white shadow-sm' : 'border-white/80 bg-white/85 dark:border-white/10 dark:bg-white/[0.03]'
+                    ? 'border-white/10 bg-white/3'
+                    : isIndia ? 'border-[#FF9933]/10 bg-white shadow-sm' : 'border-white/80 bg-white/85 dark:border-white/10 dark:bg-white/3'
                 }`}>
                   <p className={`text-sm font-semibold ${isVoid ? 'text-white' : isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>{item.label}</p>
                   <p className={`mt-1 text-xs ${isVoid ? 'text-white/55' : isIndia ? 'text-[#000080]/60' : 'text-surface-500 dark:text-white/55'}`}>{item.meta}</p>
@@ -164,7 +157,7 @@ export function AdminPage() {
       )}
 
       <div className={`grid gap-4 ${isDashboard ? 'lg:grid-cols-[1.1fr_0.9fr]' : 'grid-cols-1'}`}>
-        <section className={`rounded-[24px] border p-5 transition-colors ${isIndia ? 'bg-white border-[#FF9933]/10 shadow-sm' : 'border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900'}`}>
+        <section className={`rounded-3xl border p-5 transition-colors ${isIndia ? 'bg-white border-[#FF9933]/10 shadow-sm' : 'border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900'}`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className={`text-lg font-bold ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>Admin navigation</h2>
@@ -178,7 +171,7 @@ export function AdminPage() {
         </section>
 
         {isDashboard && (
-          <section className={`rounded-[24px] border p-5 transition-colors ${isIndia ? 'bg-white border-[#FF9933]/10 shadow-sm' : 'border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900'}`}>
+          <section className={`rounded-3xl border p-5 transition-colors ${isIndia ? 'bg-white border-[#FF9933]/10 shadow-sm' : 'border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-900'}`}>
             <h2 className={`text-lg font-bold ${isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>Live priorities</h2>
             <div className="mt-4 space-y-3">
               {[
@@ -196,7 +189,7 @@ export function AdminPage() {
         )}
       </div>
 
-      <div className={`rounded-[24px] border p-5 shadow-sm transition-colors ${isIndia ? 'bg-white border-[#FF9933]/10' : 'border-surface-200 bg-white/90 dark:border-surface-800 dark:bg-surface-900/80'}`}>
+      <div className={`rounded-3xl border p-5 shadow-sm transition-colors ${isIndia ? 'bg-white border-[#FF9933]/10' : 'border-surface-200 bg-white/90 dark:border-surface-800 dark:bg-surface-900/80'}`}>
         <Outlet />
       </div>
     </div>
@@ -207,8 +200,8 @@ function AdminHeroStat({ label, value, isVoid, isIndia }) {
   return (
     <div className={`rounded-2xl border px-4 py-3 transition-colors ${
       isVoid
-        ? 'border-white/10 bg-white/[0.05]'
-        : isIndia ? 'border-[#FF9933]/10 bg-white shadow-sm' : 'border-white/80 bg-white/85 dark:border-white/10 dark:bg-white/[0.05]'
+        ? 'border-white/10 bg-white/5'
+        : isIndia ? 'border-[#FF9933]/10 bg-white shadow-sm' : 'border-white/80 bg-white/85 dark:border-white/10 dark:bg-white/5'
     }`}>
       <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${isVoid ? 'text-white/45' : isIndia ? 'text-[#000080]/40' : 'text-surface-500 dark:text-white/45'}`}>{label}</p>
       <p className={`mt-2 text-2xl font-bold tracking-tight ${isVoid ? 'text-white' : isIndia ? 'text-[#000080]' : 'text-surface-900 dark:text-white'}`}>{value}</p>

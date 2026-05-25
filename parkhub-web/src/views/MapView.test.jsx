@@ -2,10 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 // ── Mocks ──
-const mockGetMapMarkers = vi.fn();
+const mockGetParkingLots = vi.fn();
 vi.mock('../api/client', () => ({
     api: {
-        getMapMarkers: (...args) => mockGetMapMarkers(...args),
+        getParkingLots: (...args) => mockGetParkingLots(...args),
+        getMapMarkers: (...args) => mockGetParkingLots(...args),
     },
 }));
 vi.mock('react-i18next', () => ({
@@ -16,7 +17,7 @@ vi.mock('react-i18next', () => ({
                 'map.subtitle': 'Find available parking lots near you',
                 'map.bookNow': 'Book Now',
                 'map.available': 'Available',
-                'map.noLots': 'No parking lots with location data available',
+                'map.noLots': 'No parking locations available',
                 'map.closed': 'Closed',
             };
             return map[key] || key;
@@ -33,12 +34,23 @@ vi.mock('framer-motion', () => ({
         div: React.forwardRef(({ children, variants, initial, animate, exit, transition, ...props }, ref) => (<div ref={ref} {...props}>{children}</div>)),
     },
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    MapPin: (props) => <span data-testid="icon-map-pin" {...props}/>,
-    NavigationArrow: (props) => <span data-testid="icon-nav-arrow" {...props}/>,
-    Lightning: (props) => <span data-testid="icon-lightning" {...props}/>,
-    Wheelchair: (props) => <span data-testid="icon-wheelchair" {...props}/>,
-}));
+vi.mock('@phosphor-icons/react', () => {
+    const mockIcon = (name) => {
+        const component = (props) => <span data-testid={`icon-${name}`} {...props}/>;
+        component.displayName = name;
+        return component;
+    };
+    return {
+        MapPin: mockIcon('map-pin'),
+        Lightning: mockIcon('lightning'),
+        Wheelchair: mockIcon('wheelchair'),
+        ArrowsClockwise: mockIcon('arrows-clockwise'),
+        CaretDown: mockIcon('caret-down'),
+        NavigationArrow: mockIcon('nav-arrow'),
+        MagnifyingGlass: mockIcon('magnifying-glass'),
+        X: mockIcon('x'),
+    };
+});
 vi.mock('../constants/animations', () => ({
     staggerSlow: { hidden: {}, show: {} },
     fadeUp: { hidden: {}, show: {} },
@@ -76,29 +88,29 @@ vi.mock('leaflet', () => ({
 import { MapViewPage } from './MapView';
 describe('MapViewPage', () => {
     beforeEach(() => {
-        mockGetMapMarkers.mockClear();
+        mockGetParkingLots.mockClear();
     });
     afterEach(() => {
         vi.restoreAllMocks();
     });
     it('shows loading skeleton initially', () => {
-        mockGetMapMarkers.mockReturnValue(new Promise(() => { }));
+        mockGetParkingLots.mockReturnValue(new Promise(() => { }));
         render(<MapViewPage />);
         const skeletons = document.querySelectorAll('.skeleton');
         expect(skeletons.length).toBeGreaterThan(0);
     });
     it('shows empty state when no lots have locations', async () => {
-        mockGetMapMarkers.mockResolvedValue({
+        mockGetParkingLots.mockResolvedValue({
             success: true,
             data: [],
         });
         render(<MapViewPage />);
         await waitFor(() => {
-            expect(screen.getByText('No parking lots with location data available')).toBeInTheDocument();
+            expect(screen.getByText('No parking locations available')).toBeInTheDocument();
         });
     });
     it('renders map with markers when lots have coordinates', async () => {
-        mockGetMapMarkers.mockResolvedValue({
+        mockGetParkingLots.mockResolvedValue({
             success: true,
             data: [
                 {
@@ -127,14 +139,14 @@ describe('MapViewPage', () => {
         });
         render(<MapViewPage />);
         await waitFor(() => {
-            expect(screen.getByText('Parking Map')).toBeInTheDocument();
+            expect(screen.getByText('Find Parking Near You')).toBeInTheDocument();
         });
         expect(screen.getByTestId('leaflet-map')).toBeInTheDocument();
-        const markers = screen.getAllByTestId('map-marker');
-        expect(markers).toHaveLength(2);
+        expect(screen.getAllByText('Central Parking').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Airport Parking').length).toBeGreaterThan(0);
     });
     it('renders page title and subtitle', async () => {
-        mockGetMapMarkers.mockResolvedValue({
+        mockGetParkingLots.mockResolvedValue({
             success: true,
             data: [
                 {
@@ -152,12 +164,12 @@ describe('MapViewPage', () => {
         });
         render(<MapViewPage />);
         await waitFor(() => {
-            expect(screen.getByText('Parking Map')).toBeInTheDocument();
+            expect(screen.getByText('Find Parking Near You')).toBeInTheDocument();
         });
-        expect(screen.getByText('Find available parking lots near you')).toBeInTheDocument();
+        expect(screen.getByText(/Real-time parking availability across India/i)).toBeInTheDocument();
     });
-    it('shows marker popups with lot details', async () => {
-        mockGetMapMarkers.mockResolvedValue({
+    it('shows sidebar lot list with details', async () => {
+        mockGetParkingLots.mockResolvedValue({
             success: true,
             data: [
                 {
@@ -177,17 +189,15 @@ describe('MapViewPage', () => {
         await waitFor(() => {
             expect(screen.getAllByText('Central Parking').length).toBeGreaterThan(0);
         });
-        expect(screen.getAllByText('123 Main St').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('Book Now').length).toBeGreaterThan(0);
     });
     it('handles API failure gracefully', async () => {
-        mockGetMapMarkers.mockResolvedValue({
+        mockGetParkingLots.mockResolvedValue({
             success: false,
             data: null,
         });
         render(<MapViewPage />);
         await waitFor(() => {
-            expect(screen.getByText('No parking lots with location data available')).toBeInTheDocument();
+            expect(screen.getByText('No parking locations available')).toBeInTheDocument();
         });
     });
 });

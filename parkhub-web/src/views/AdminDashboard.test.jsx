@@ -48,21 +48,7 @@ vi.mock('framer-motion', () => ({
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
-vi.mock('@phosphor-icons/react', () => ({
-    ChartBar: (props) => <span data-testid="icon-chart" {...props}/>,
-    CurrencyCircleDollar: (props) => <span data-testid="icon-currency" {...props}/>,
-    CalendarCheck: (props) => <span data-testid="icon-cal-check" {...props}/>,
-    UsersThree: (props) => <span data-testid="icon-users" {...props}/>,
-    Fire: (props) => <span data-testid="icon-fire" {...props}/>,
-    Warning: (props) => <span data-testid="icon-warning" {...props}/>,
-    Wrench: (props) => <span data-testid="icon-wrench" {...props}/>,
-    Lightning: (props) => <span data-testid="icon-lightning" {...props}/>,
-    Plus: (props) => <span data-testid="icon-plus" {...props}/>,
-    Minus: (props) => <span data-testid="icon-minus" {...props}/>,
-    GearSix: (props) => <span data-testid="icon-gear" {...props}/>,
-    Question: (props) => <span data-testid="icon-question" {...props}/>,
-    ArrowsOutCardinal: (props) => <span data-testid="icon-arrows" {...props}/>,
-}));
+
 vi.mock('react-hot-toast', () => ({
     default: {
         success: (...args) => mockToastSuccess(...args),
